@@ -566,3 +566,14 @@ body{background:var(--bg);color:var(--text)}
 .theme-neon .sample-alert{box-shadow:none!important;text-shadow:none!important;filter:none!important}
 .theme-neon .sample-alert-icon{box-shadow:none!important;filter:none!important}
 .overlay-root *{text-shadow:none}
+
+/* Compact collapsible navigation for the creator workspace */
+.creator-menu-toggle{display:none;align-items:center;justify-content:center;gap:8px;border:1px solid #e4ded4;border-radius:10px;background:#fff;color:#514b44;padding:10px 12px;font-size:12px;font-weight:700}
+@media(max-width:760px){
+ .dashboard-nav{position:relative;display:flex;align-items:center;gap:10px}
+ .creator-menu-toggle{display:inline-flex;order:2;margin-left:auto}
+ .creator-nav-menu{display:none;order:4;width:100%;overflow:visible;margin:0;padding:8px 0 0;flex-direction:column;align-items:stretch;border-top:1px solid #e4ded4}
+ .creator-nav-menu.creator-nav-menu-open{display:flex}
+ .creator-nav-link{width:100%;padding:12px;border-radius:9px;font-size:13px}
+ .dashboard-user{order:3;margin-left:0}
+}
