@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: "Token overlay gagal dibuat. Coba lagi." }, { status: 500 });
 
-  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
   const origin = configuredOrigin || new URL(request.url).origin;
   return NextResponse.json({
     url: `${origin}/overlay/${token}`,
