@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 type Feature = { slug: string; icon: string; title: string; description: string; group: string };
-type OverlayStatus = { active: boolean; createdAt: string | null };
+type OverlayStatus = { active: boolean; createdAt: string | null; supportEnabled: boolean; overlayEnabled: boolean; minimumAmount: number };
 type Props = { features: Feature[] };
 
 export function FeatureOverlayLinks({ features }: Props) {
@@ -21,7 +21,7 @@ export function FeatureOverlayLinks({ features }: Props) {
       if (!response.ok) throw new Error(data.error ?? "Status overlay belum dapat dimuat.");
       const next: Record<string, OverlayStatus> = {};
       for (const item of data.features ?? []) {
-        next[item.featureKey] = { active: Boolean(item.active), createdAt: item.createdAt ?? null };
+        next[item.featureKey] = { active: Boolean(item.active), createdAt: item.createdAt ?? null, supportEnabled: Boolean(item.supportEnabled), overlayEnabled: Boolean(item.overlayEnabled), minimumAmount: item.minimumAmount ?? 1000 };
       }
       setStatuses(next);
       const saved: Record<string, string> = {};
@@ -64,16 +64,43 @@ export function FeatureOverlayLinks({ features }: Props) {
       if (action === "create") {
         setUrls((previous) => ({ ...previous, [featureKey]: data.url }));
         try { window.localStorage.setItem(`bagisawer:overlay-url:${featureKey}`, data.url); } catch { /* Keep URL in component state if storage is unavailable. */ }
-        setStatuses((previous) => ({ ...previous, [featureKey]: { active: true, createdAt: new Date().toISOString() } }));
+        setStatuses((previous) => ({ ...previous, [featureKey]: { active: true, createdAt: new Date().toISOString(), supportEnabled: statuses[featureKey]?.supportEnabled ?? featureKey === "saweran", overlayEnabled: statuses[featureKey]?.overlayEnabled ?? false, minimumAmount: statuses[featureKey]?.minimumAmount ?? 1000 } }));
         setNotice(`URL khusus ${featureKey} dibuat. Salin dan simpan sekarang; URL lama untuk fitur ini tidak berlaku lagi.`);
       } else {
-        setStatuses((previous) => ({ ...previous, [featureKey]: { active: false, createdAt: previous[featureKey]?.createdAt ?? null } }));
+        setStatuses((previous) => ({ ...previous, [featureKey]: { active: false, createdAt: previous[featureKey]?.createdAt ?? null, supportEnabled: previous[featureKey]?.supportEnabled ?? featureKey === "saweran", overlayEnabled: previous[featureKey]?.overlayEnabled ?? false, minimumAmount: previous[featureKey]?.minimumAmount ?? 1000 } }));
         setUrls((previous) => { const next = { ...previous }; delete next[featureKey]; return next; });
         try { window.localStorage.removeItem(`bagisawer:overlay-url:${featureKey}`); } catch { /* Ignore unavailable storage. */ }
         setNotice(`URL overlay ${featureKey} sudah dicabut.`);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Permintaan overlay gagal.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function updateFeatureToggle(featureKey: string, target: "supportEnabled" | "overlayEnabled", enabled: boolean) {
+    const current = statuses[featureKey];
+    if (!current || busy || testBusy) return;
+    if (featureKey === "saweran" && target === "supportEnabled" && !enabled) return;
+    setBusy(featureKey);
+    setError("");
+    setNotice("");
+    const nextSupportEnabled = target === "supportEnabled" ? enabled : current.supportEnabled;
+    const nextOverlayEnabled = target === "overlayEnabled" ? enabled : current.overlayEnabled;
+    try {
+      const response = await fetch("/api/streaming/feature-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featureKey, enabled: nextSupportEnabled, overlayEnabled: nextOverlayEnabled, minimumAmount: current.minimumAmount }),
+        cache: "no-store"
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Status fitur gagal disimpan.");
+      setStatuses((previous) => ({ ...previous, [featureKey]: { ...previous[featureKey], supportEnabled: nextSupportEnabled, overlayEnabled: nextOverlayEnabled } }));
+      setNotice(`${featureKey}: pilihan /dukung ${nextSupportEnabled ? "aktif" : "nonaktif"}; overlay ${nextOverlayEnabled ? "aktif" : "nonaktif"}.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Status fitur gagal disimpan.");
     } finally {
       setBusy(null);
     }
@@ -128,6 +155,11 @@ export function FeatureOverlayLinks({ features }: Props) {
             <article className="tool-card" id={feature.slug} key={feature.slug}>
               <div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><span className="tool-badge">{feature.group}</span></div></div>
               <p>{feature.description}</p>
+              <div style={{display:"grid",gap:8,margin:"12px 0",fontSize:12}}>
+                <label style={{display:"flex",alignItems:"center",gap:8}}><input type="checkbox" checked={status?.supportEnabled ?? feature.slug === "saweran"} disabled={busy !== null || testBusy !== null || feature.slug === "saweran"} onChange={(event) => void updateFeatureToggle(feature.slug, "supportEnabled", event.target.checked)} /> Tampilkan pilihan ini di /dukung</label>
+                <label style={{display:"flex",alignItems:"center",gap:8}}><input type="checkbox" checked={Boolean(status?.overlayEnabled)} disabled={busy !== null || testBusy !== null} onChange={(event) => void updateFeatureToggle(feature.slug, "overlayEnabled", event.target.checked)} /> Aktifkan overlay fitur ini</label>
+                <small>Minimal donasi: Rp{(status?.minimumAmount ?? 1000).toLocaleString("id-ID")}. Ubah di pengaturan modul fitur.</small>
+              </div>
               <span className={`tool-badge ${status?.active ? "tool-badge-green" : "tool-badge-amber"}`}>{status?.active ? "Token aktif" : status ? "Belum dibuat / dicabut" : "Memeriksa status…"}</span>
               {url ? (
                 <div className="tool-overlay-url"><small>URL RAHASIA · {feature.slug.toUpperCase()}</small><code>{url}</code><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" onClick={() => void copyUrl(feature.slug)}>Salin URL</button><a href={url} target="_blank" rel="noreferrer" className="btn btn-ghost">Buka overlay ↗</a></div><small>URL disimpan di browser ini agar tetap bisa disalin setelah halaman dimuat ulang. Salin juga ke tempat aman; jangan bagikan URL rahasia.</small></div>
