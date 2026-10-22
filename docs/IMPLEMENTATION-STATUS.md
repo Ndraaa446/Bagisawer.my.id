@@ -49,3 +49,21 @@ The preview's SSO restriction currently prevents the available external browser 
 - Real payment providers, actual money movement, and payouts are out of scope; sandbox checks are not proof of real-money processing.
 - Leaked-password protection remains a security follow-up; it has not been enabled in this batch.
 - Do not merge this branch to `main` or publish production without explicit approval.
+
+## Product UI batch — creator workspace, donation form, payment catalogue
+
+- Added an authenticated feature-center route at `/dashboard/fitur` with category views for donations, payment methods, per-feature overlays, livestream interactions, and ecosystem modules.
+- The creator dashboard now links to the feature center.
+- Added a public creator support-page UI at `/[username]/dukung`, linked from the public creator profile. It supports amount selection, custom amount, optional name/message, anonymity toggle, and selecting a payment method in the UI.
+- Listed QRIS, virtual account, bank transfer, GoPay, DANA, OVO, ShopeePay, LinkAja, debit/credit card, and retail payment methods. Every method is explicitly labelled unavailable because no external provider is configured.
+- Listed distinct overlay slots for each donation/interaction module. These are design slots only: per-feature token generation, route authorization, and event filtering are not yet implemented. Do not copy or use placeholder overlay labels as URLs.
+- The support-page submit action only displays a disabled-checkout notice; it does not create a transaction or accept money.
+- The latest branch commits trigger a Vercel status failure due to the account deployment-rate limit. No manual deployment was requested or performed. Fresh GitHub Actions/Netlify results for the latest UI batch are not yet confirmed.
+
+## Next implementation batch
+
+1. Implement per-feature overlay tokens and isolated event filters; retain compatibility with the existing general OBS token.
+2. Add module-specific configuration screens for goals, mediashare, voice notes, song requests, leaderboard, subathon, running text, soundboard, polling, VIP queue, Bagpao, Gachaton, Bidcoin, store/vouchers, and competitions/clips.
+3. Add support-page method validation and a provider-adapter boundary, keeping every live checkout disabled until a provider is selected and verified.
+4. Continue dashboard surfaces for transaction history, balances, payout requests, profile/theme, moderation, notifications, and admin controls.
+5. Only then run consolidated UI/flow testing; keep login/recovery verification deferred as previously requested unless separately authorized.
