@@ -15,8 +15,8 @@
 
 ## Verification evidence
 
-- GitHub Actions Quality checks run #19 (`39803342414`) passed lint, typecheck, and production build for the code/migration batch before the latest overlay API hardening; a fresh CI run is required for these newest changes.
-- Netlify Deploy Preview status for commit `3cb4670db4cda0a9ef431a503d087bbb61d54e0b` was **success**. Netlify bot posted the preview URL: https://deploy-preview-1--bagisawe.netlify.app and deploy log: https://app.netlify.com/projects/bagisawe/deploys/6ada29805023955eac473189. This is the previous commit; the latest code changes need their own preview build.
+- GitHub Actions Quality checks run #46 (`39806791737`) passed lint, typecheck, and production build for commit `6e66654ab6ebfca5ec94b76be8b7d3b569960bc3`, including the overlay URL and account-flow hardening.
+- Netlify Deploy Preview status for commit `149a88df6f0c30ce8c8cde63927adeea2e1fb505` was **ready**. Netlify bot posted https://deploy-preview-1--bagisawe.netlify.app and deploy log https://app.netlify.com/projects/bagisawe/deploys/6ada2d8fb4c03c63cc488cd8. Commits after `149a88d` contain further auth-flow fixes and still need a preview build before end-to-end testing.
 - The preview has SSO team-login protection. Direct browser inspection from the available checker was blocked, so interactive UI and OBS behavior are **not yet verified**.
 - Supabase migration `atomic_test_alert_rate_limit` was applied to project `gzfeyyflrnrqrnbvgsow`.
 - Read-only invariant query: 1 sandbox donation, 1 payment event, 2 ledger entries, 0 unbalanced donations, and 0 duplicate provider-event IDs.
