@@ -65,12 +65,41 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) redirect("/login");
   const routeParams = await params;
-  const current = routeParams.module?.[0] ?? "ringkasan";
-  const title = sections.find((item) => item.slug === current)?.title ?? "Pusat fitur";
+  const routeSegments = routeParams.module ?? [];
+  const currentFeature = routeSegments[0] === "modul" && routeSegments[1]
+    ? features.find((feature) => feature.slug === routeSegments[1])
+    : undefined;
+  const current = currentFeature ? "modul" : routeSegments[0] ?? "ringkasan";
+  const title = currentFeature?.title ?? sections.find((item) => item.slug === current)?.title ?? "Pusat fitur";
+  const activeNav = currentFeature
+    ? currentFeature.group === "Donasi" ? "donasi" : currentFeature.group === "Interaksi" ? "interaksi" : "ekosistem"
+    : current;
   const visibleFeatures = current === "donasi" ? features.filter((feature) => feature.group === "Donasi")
     : current === "interaksi" ? features.filter((feature) => feature.group === "Interaksi")
     : current === "ekosistem" ? features.filter((feature) => feature.group === "Ekosistem")
     : current === "overlay" ? overlayTypes : features;
+  const moduleSettings: Record<string, Array<{ label: string; description: string }>> = {
+    saweran: [{label:"Nominal dukungan",description:"Nominal minimum, pilihan rekomendasi, dan batas maksimum."},{label:"Nama dan anonimitas",description:"Aturan penyamaran identitas pada feed, riwayat publik, dan alert."},{label:"Pesan pendukung",description:"Batas karakter, filter kata, dan alur moderasi."}],
+    anonim: [{label:"Tampilan identitas",description:"Sembunyikan nama dan metadata pribadi di semua permukaan publik."},{label:"Pengecualian privasi",description:"Pastikan identitas asli hanya tersedia untuk pemrosesan internal yang sah."}],
+    pesan: [{label:"Aturan pesan",description:"Batas karakter, bahasa, filter spam, dan sanitasi teks."},{label:"Moderasi",description:"Pilihan tahan, sembunyikan, atau izinkan pesan sebelum ditampilkan."}],
+    target: [{label:"Target dan tenggat",description:"Nama target, nominal, tanggal akhir, dan aturan progres."},{label:"Tampilan overlay",description:"Progress bar, label, milestone, dan format angka."}],
+    mediashare: [{label:"Batas media",description:"Durasi maksimum, domain yang diizinkan, dan format URL."},{label:"Keamanan dan moderasi",description:"Validasi URL di server, perlindungan SSRF, antrean review, dan skip."}],
+    voicenote: [{label:"Batas file",description:"Format, ukuran, durasi, dan penyimpanan privat."},{label:"Persetujuan audio",description:"Moderasi, mute, skip, serta kontrol pemutaran."}],
+    lagu: [{label:"Provider lagu",description:"Integrasi resmi dan sumber playback yang diizinkan."},{label:"Aturan antrean",description:"Batas permintaan, duplikasi, kata terlarang, dan skip."}],
+    qris: [{label:"QR halaman dukungan",description:"QR mengarah ke URL Bagisawer; bukan QR rekening/pembayaran palsu."},{label:"Privasi dan berbagi",description:"Pratinjau QR, unduh gambar, dan tautan publik."}],
+    leaderboard: [{label:"Periode peringkat",description:"Harian, mingguan, bulanan, dan sepanjang waktu."},{label:"Privasi",description:"Dukungan anonim tidak boleh muncul sebagai identitas di peringkat."}],
+    subathon: [{label:"Timer",description:"Durasi awal, tambahan waktu per event, dan batas maksimum."},{label:"Kontrol siaran",description:"Mulai, jeda, lanjutkan, hentikan, dan histori event."}],
+    "running-text": [{label:"Tampilan teks",description:"Kecepatan, durasi, arah, warna, dan batas karakter."},{label:"Moderasi",description:"Filter spam dan review sebelum teks tampil di siaran."}],
+    soundboard: [{label:"Suara dan trigger",description:"Daftar suara, volume, trigger, dan batas frekuensi."},{label:"Keamanan audio",description:"Batas volume, cooldown, dan kontrol mute."}],
+    polling: [{label:"Pertanyaan dan opsi",description:"Judul, pilihan jawaban, batas waktu, dan penutupan voting."},{label:"Anti-abuse",description:"Batas suara per pengguna dan hasil yang tervalidasi server."}],
+    "vip-queue": [{label:"Aturan prioritas",description:"Kriteria prioritas dan batas jumlah antrean."},{label:"Transparansi",description:"Urutan, alasan perubahan, dan histori moderator."}],
+    bagpao: [{label:"Spesifikasi modul",description:"Perilaku dan aturan produk perlu ditetapkan sebelum implementasi."}],
+    gachaton: [{label:"Aturan dan hasil",description:"Probabilitas, transparansi, histori, dan batas interaksi."},{label:"Tinjauan wajib",description:"Perlu review hukum/keamanan bila melibatkan uang atau hadiah."}],
+    bidcoin: [{label:"Poin internal",description:"Aturan perolehan/penggunaan, histori, batas, dan masa berlaku."},{label:"Batasan produk",description:"Tidak diposisikan sebagai uang atau aset finansial nyata."}],
+    store: [{label:"Katalog dan stok",description:"Produk, harga, inventaris, dan status ketersediaan."},{label:"Pesanan dan pemenuhan",description:"Pengiriman, refund, laporan, dan integrasi supplier."}],
+    notifikasi: [{label:"Kanal",description:"Email dan notifikasi dalam aplikasi beserta preferensi."},{label:"Template dan status",description:"Template pesan, status terkirim/gagal, dan retry."}],
+    kompetisi: [{label:"Aturan kompetisi",description:"Periode, kategori, syarat, dan metode penilaian."},{label:"Klip dan hasil",description:"Pengiriman klip, moderasi, hasil, dan histori perubahan."}]
+  };
 
   return (
     <main className="wrap dashboard-page tool-center">
@@ -96,10 +125,17 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
       </section>
 
       <nav className="tool-nav" aria-label="Kategori pusat fitur">
-        {sections.map((section) => <Link key={section.slug} className={current === section.slug ? "active" : ""} href={section.slug === "ringkasan" ? "/dashboard/fitur" : `/dashboard/fitur/${section.slug}`}>{section.icon} {section.title}</Link>)}
+        {sections.map((section) => <Link key={section.slug} className={activeNav === section.slug ? "active" : ""} href={section.slug === "ringkasan" ? "/dashboard/fitur" : `/dashboard/fitur/${section.slug}`}>{section.icon} {section.title}</Link>)}
       </nav>
 
-      {current === "keuangan" ? (
+      {currentFeature ? (
+        <>
+          <div className="tool-section-head"><div><h2>Pengaturan {currentFeature.title}</h2><p>Rancangan layar untuk konfigurasi fitur. Penyimpanan pengaturan dan event produksi akan diaktifkan setelah backend modul siap.</p></div><Badge tone="amber">Konfigurasi belum tersimpan</Badge></div>
+          <div className="tool-grid">{(moduleSettings[currentFeature.slug] ?? [{label:"Pengaturan modul",description:"Atur perilaku, batas, akses, dan tampilan setelah spesifikasi modul selesai."}]).map((setting) => <article className="tool-card" key={setting.label}><div className="tool-icon">⚙</div><h3>{setting.label}</h3><p>{setting.description}</p><Badge tone="amber">Menunggu backend</Badge></article>)}</div>
+          {currentFeature.overlay ? <><div className="tool-section-head"><div><h2>Overlay khusus {currentFeature.title}</h2><p>Token dan URL ini hanya berlaku untuk fitur ini.</p></div></div><FeatureOverlayLinks features={[currentFeature]} /></> : <div className="tool-empty">Modul ini belum memerlukan overlay tersendiri atau integrasi overlay belum ditetapkan.</div>}
+          <div className="tool-card-footer"><small>Kembali ke kategori {currentFeature.group.toLowerCase()}</small><Link href={currentFeature.group === "Donasi" ? "/dashboard/fitur/donasi" : currentFeature.group === "Interaksi" ? "/dashboard/fitur/interaksi" : "/dashboard/fitur/ekosistem"}>Kembali ↗</Link></div>
+        </>
+      ) : current === "keuangan" ? (
         <>
           <div className="tool-section-head"><div><h2>Keuangan kreator</h2><p>Saldo dan transaksi akan berasal dari ledger terverifikasi; tidak ada saldo demo yang ditampilkan sebagai uang nyata.</p></div><Badge tone="amber">Belum aktif</Badge></div>
           <div className="tool-summary-grid"><div className="tool-summary"><strong>—</strong><span>Saldo tersedia</span></div><div className="tool-summary"><strong>—</strong><span>Saldo tertahan</span></div><div className="tool-summary"><strong>—</strong><span>Total dukungan</span></div><div className="tool-summary"><strong>—</strong><span>Biaya platform</span></div></div>
@@ -146,12 +182,12 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
       ) : current === "donasi" || current === "interaksi" || current === "ekosistem" ? (
         <>
           <div className="tool-section-head"><div><h2>{title}</h2><p>Setiap modul memiliki halaman pengaturan, validasi, status, dan pengujian tersendiri sebelum diaktifkan.</p></div><Badge>{visibleFeatures.length} modul</Badge></div>
-          <div className="tool-grid">{visibleFeatures.map((feature) => <article className="tool-card" key={feature.slug}><div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><Badge>{feature.group}</Badge></div></div><p>{feature.description}</p><Badge tone={feature.status ? "amber" : "muted"}>{feature.status ?? "Menunggu implementasi alur"}</Badge><div className="tool-card-footer"><small>Modul: {feature.slug}</small><Link href={`/dashboard/fitur/overlay#${feature.slug}`}>Kebutuhan overlay ↗</Link></div></article>)}</div>
+          <div className="tool-grid">{visibleFeatures.map((feature) => <article className="tool-card" key={feature.slug}><div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><Badge>{feature.group}</Badge></div></div><p>{feature.description}</p><Badge tone={feature.status ? "amber" : "muted"}>{feature.status ?? "Menunggu implementasi alur"}</Badge><div className="tool-card-footer"><small>Modul: {feature.slug}</small><Link href={`/dashboard/fitur/modul/${feature.slug}`}>Pengaturan modul ↗</Link></div></article>)}</div>
         </>
       ) : (
         <>
           <div className="tool-section-head"><div><h2>Semua modul dalam satu peta kerja</h2><p>Susunan tampilan produk sebelum pengujian alur menyeluruh.</p></div><Badge tone="green">Inventaris tersusun</Badge></div>
-          <div className="tool-grid">{features.map((feature) => <article className="tool-card" key={feature.slug}><div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><Badge>{feature.group}</Badge></div></div><p>{feature.description}</p><Badge tone={feature.status ? "amber" : "muted"}>{feature.status ?? "Direncanakan"}</Badge><div className="tool-card-footer"><small>{feature.overlay ? "Memerlukan overlay khusus" : "Modul dashboard"}</small><Link href={feature.group === "Donasi" ? "/dashboard/fitur/donasi" : feature.group === "Interaksi" ? "/dashboard/fitur/interaksi" : "/dashboard/fitur/ekosistem"}>Lihat modul ↗</Link></div></article>)}</div>
+          <div className="tool-grid">{features.map((feature) => <article className="tool-card" key={feature.slug}><div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><Badge>{feature.group}</Badge></div></div><p>{feature.description}</p><Badge tone={feature.status ? "amber" : "muted"}>{feature.status ?? "Direncanakan"}</Badge><div className="tool-card-footer"><small>{feature.overlay ? "Memerlukan overlay khusus" : "Modul dashboard"}</small><Link href={`/dashboard/fitur/modul/${feature.slug}`}>Lihat modul ↗</Link></div></article>)}</div>
           <div className="tool-section-head"><div><h2>Metode pembayaran</h2><p>Daftar target integrasi; tidak ada provider aktif.</p></div><Link className="btn btn-ghost" href="/dashboard/fitur/pembayaran">Lihat semua metode ↗</Link></div>
           <div className="tool-methods">{paymentMethods.slice(0, 4).map((method) => <article className="tool-method" key={method.name}><span className="tool-method-mark">▦</span><div><strong>{method.name}</strong><p>{method.detail}</p><div style={{marginTop:8}}><Badge tone="amber">Belum aktif</Badge></div></div></article>)}</div>
           <div className="tool-section-head"><div><h2>Overlay khusus per fitur</h2><p>Jangan gunakan satu token bersama untuk semua jenis event.</p></div><Link className="btn btn-ghost" href="/dashboard/fitur/overlay">Kelola daftar overlay ↗</Link></div>
