@@ -8,7 +8,7 @@ Updated: 2026-10-22
 - Supabase project: bagisawer.my.id; API/database reports ACTIVE_HEALTHY.
 - Vercel project: bagisawer, linked to the GitHub repository.
 - Production deployment for auth callback/password reset commit `97e3508b7e22a65e839619a1ce23cfabf21266e9` reached READY.
-- Supabase middleware session-refresh commit `1c463d44f4d6bf806fd90bcf68a99f897c11b5ba` was queued after that deployment and needs final deployment status verification.
+- Supabase middleware session refresh previously reached READY; latest streaming changes are building/queued and still need final deployment verification.
 
 ## Implemented in repository
 - Product feature matrix, product specification, architecture, payment flow and security docs.
@@ -28,12 +28,12 @@ Updated: 2026-10-22
 
 ## Verification evidence
 - Supabase migrations for creator profiles, stream settings, overlay tokens, and isolated test-alert events applied; verify latest migration history before release.
-- `public.overlay_tokens` has RLS enabled with no client policies/grants; server-only service access is required. `public.alert_events` allows authenticated owners to read/insert test-only events and denies client update/delete.
+- `public.overlay_tokens` has RLS enabled, an explicit deny-all policy for browser roles, and no client grants; server-only service access is required. `public.alert_events` allows authenticated owners to read/insert test-only events and denies client update/delete.
 - `public.creator_stream_settings` has RLS enabled with owner-scoped select/insert/update policies; anonymous access is revoked.
 - Database inspection confirms `public.creator_profiles` exists with RLS enabled and three policies.
-- Supabase security and performance advisors returned no lints at the time checked.
+- Supabase security advisor now reports no overlay-token RLS-policy lint; remaining warning is Supabase Auth leaked-password protection disabled (auth configuration deferred by request). Performance advisor notes the new alert index is not yet used because the event table is new.
 - Vercel deployment for auth callback and password recovery pages `dpl_2w6EWMEAafkjAE5162GGtuz7EQxi` reached READY. Build output included `/auth/callback`, `/forgot-password`, and `/reset-password`.
-- The middleware change has a new deployment queued; verify its final status before declaring the latest production revision healthy.
+- Latest OBS deployment builds are queued behind successive GitHub pushes; verify the final commit deployment reaches READY before calling this release deployed.
 - No end-to-end signup/email/reset/profile browser tests have been performed in this session.
 
 ## Not yet implemented / launch blockers
