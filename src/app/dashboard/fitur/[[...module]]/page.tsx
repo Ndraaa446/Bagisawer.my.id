@@ -48,6 +48,11 @@ const sections = [
   { slug: "overlay", title: "Overlay per fitur", icon: "▣" },
   { slug: "interaksi", title: "Interaksi livestream", icon: "✦" },
   { slug: "ekosistem", title: "Ekosistem kreator", icon: "◈" },
+  { slug: "keuangan", title: "Keuangan & pencairan", icon: "Rp" },
+  { slug: "analitik", title: "Analitik & laporan", icon: "▥" },
+  { slug: "notifikasi", title: "Notifikasi", icon: "♧" },
+  { slug: "moderasi", title: "Moderasi & admin", icon: "⚑" },
+  { slug: "pengaturan", title: "Pengaturan akun", icon: "⚙" },
 ];
 
 function Badge({ children, tone = "muted" }: { children: React.ReactNode; tone?: "muted" | "green" | "amber" }) {
@@ -93,7 +98,39 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
         {sections.map((section) => <Link key={section.slug} className={current === section.slug ? "active" : ""} href={section.slug === "ringkasan" ? "/dashboard/fitur" : `/dashboard/fitur/${section.slug}`}>{section.icon} {section.title}</Link>)}
       </nav>
 
-      {current === "pembayaran" ? (
+      {current === "keuangan" ? (
+        <>
+          <div className="tool-section-head"><div><h2>Keuangan kreator</h2><p>Saldo dan transaksi akan berasal dari ledger terverifikasi; tidak ada saldo demo yang ditampilkan sebagai uang nyata.</p></div><Badge tone="amber">Belum aktif</Badge></div>
+          <div className="tool-summary-grid"><div className="tool-summary"><strong>—</strong><span>Saldo tersedia</span></div><div className="tool-summary"><strong>—</strong><span>Saldo tertahan</span></div><div className="tool-summary"><strong>—</strong><span>Total dukungan</span></div><div className="tool-summary"><strong>—</strong><span>Biaya platform</span></div></div>
+          <div className="tool-section-head"><div><h2>Riwayat transaksi</h2><p>Filter tanggal, status, metode, pencarian referensi, dan ekspor setelah backend keuangan siap.</p></div></div>
+          <div className="tool-empty">Belum ada transaksi produksi untuk ditampilkan. Data sandbox dipisahkan dan tidak dianggap sebagai saldo nyata.</div>
+          <div className="tool-section-head"><div><h2>Pencairan dana</h2><p>Formulir rekening, pemeriksaan kelayakan, persetujuan, status, dan rekonsiliasi provider.</p></div></div>
+          <div className="tool-empty">Permintaan pencairan dinonaktifkan sampai provider pembayaran, kebijakan verifikasi, dan alur ledger siap diuji.</div>
+        </>
+      ) : current === "analitik" ? (
+        <>
+          <div className="tool-section-head"><div><h2>Analitik & laporan</h2><p>Grafik dukungan, tren periode, sumber event, performa overlay, dan ekspor laporan.</p></div><Badge>Kerangka UI</Badge></div>
+          <div className="tool-grid">{[{title:"Tren dukungan",description:"Grafik harian/mingguan/bulanan dengan filter rentang waktu."},{title:"Sumber dukungan",description:"Rincian metode pembayaran dan kanal event setelah provider terhubung."},{title:"Performa alert",description:"Jumlah event, waktu antre, event gagal, dan status koneksi overlay."}].map((item) => <article className="tool-card" key={item.title}><div className="tool-icon">▥</div><h3>{item.title}</h3><p>{item.description}</p><Badge>Menunggu data terverifikasi</Badge></article>)}</div>
+          <div className="tool-empty">Grafik belum menampilkan angka contoh agar data ilustrasi tidak tertukar dengan transaksi sungguhan.</div>
+        </>
+      ) : current === "notifikasi" ? (
+        <>
+          <div className="tool-section-head"><div><h2>Pusat notifikasi</h2><p>Notifikasi pembayaran, keamanan akun, status pencairan, dan pembaruan fitur.</p></div><Badge>Kerangka UI</Badge></div>
+          <div className="tool-empty"><strong>Belum ada notifikasi.</strong><br/>Notifikasi akan muncul di sini setelah sistem event, email, dan preferensi pengguna terhubung. Tidak ada notifikasi dummy yang dibuat seolah-olah nyata.</div>
+          <div className="tool-section-head"><div><h2>Preferensi notifikasi</h2><p>Pengaturan email dan notifikasi dalam aplikasi.</p></div></div>
+          <div className="tool-grid">{["Dukungan berhasil","Perubahan keamanan akun","Pencairan dan refund","Pembaruan produk"].map((item) => <article className="tool-card" key={item}><div className="tool-card-top"><span className="tool-icon">♧</span><div><h3>{item}</h3><Badge>Belum terhubung</Badge></div></div><p>Preferensi dapat dikonfigurasi setelah layanan notifikasi tersedia.</p></article>)}</div>
+        </>
+      ) : current === "moderasi" ? (
+        <>
+          <div className="tool-section-head"><div><h2>Moderasi & admin</h2><p>Area staf harus memakai role server-side, audit trail, dan akses minimum; bukan sekadar menyembunyikan tombol.</p></div><Badge tone="amber">Role admin belum lengkap</Badge></div>
+          <div className="tool-grid">{[{title:"Laporan pengguna",description:"Daftar laporan, prioritas, status, dan catatan moderator."},{title:"Moderasi pesan/media",description:"Tinjau pesan dukungan, voice note, video, dan permintaan lagu."},{title:"Manajemen kreator",description:"Status profil, pembatasan akun, dan histori tindakan yang dapat diaudit."},{title:"Transaksi & refund",description:"Pencarian referensi, sengketa, refund, dan rekonsiliasi oleh petugas berizin."},{title:"Biaya & kebijakan",description:"Konfigurasi biaya platform dan batas yang berversi."},{title:"Audit log",description:"Siapa melakukan tindakan apa, kapan, dan alasan tindakan."}].map((item) => <article className="tool-card" key={item.title}><div className="tool-icon">⚑</div><h3>{item.title}</h3><p>{item.description}</p><Badge tone="amber">Menunggu RBAC backend</Badge></article>)}</div>
+        </>
+      ) : current === "pengaturan" ? (
+        <>
+          <div className="tool-section-head"><div><h2>Pengaturan kreator</h2><p>Profil, tema, halaman publik, keamanan akun, dan pengaturan siaran.</p></div></div>
+          <div className="tool-grid"><article className="tool-card"><div className="tool-icon">◉</div><h3>Profil & halaman publik</h3><p>Username, nama tampilan, bio, status publik, dan pratinjau halaman.</p><div className="tool-card-footer"><small>Editor profil</small><Link href="/dashboard">Buka profil ↗</Link></div></article><article className="tool-card"><div className="tool-icon">▣</div><h3>Livestream & OBS</h3><p>Ambang alert, durasi, tema, suara, dan token overlay umum.</p><div className="tool-card-footer"><small>Pengaturan streaming</small><Link href="/dashboard/streaming">Buka OBS ↗</Link></div></article><article className="tool-card"><div className="tool-icon">⚙</div><h3>Keamanan akun</h3><p>Kelola sesi, kata sandi, dan preferensi keamanan. Alur email masih menunggu pengujian end-to-end.</p><div className="tool-card-footer"><small>Autentikasi</small><Link href="/login">Halaman masuk ↗</Link></div></article></div>
+        </>
+      ) : current === "pembayaran" ? (
         <>
           <div className="tool-section-head"><div><h2>Metode pembayaran yang perlu disiapkan</h2><p>Provider belum dipilih; setiap metode baru aktif setelah adapter, webhook, dan rekonsiliasi lulus uji.</p></div><Badge tone="amber">Belum aktif</Badge></div>
           <div className="tool-methods">{paymentMethods.map((method) => <article className="tool-method" key={method.name}><span className="tool-method-mark">▦</span><div><strong>{method.name}</strong><p>{method.detail}</p><Badge>{method.category}</Badge><div style={{marginTop:8}}><Badge tone="amber">Menunggu provider</Badge></div></div></article>)}</div>
