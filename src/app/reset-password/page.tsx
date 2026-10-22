@@ -27,8 +27,10 @@ export default function ResetPasswordPage() {
       if (result.error) throw result.error;
 
       // End the recovery session so the user must authenticate with the new password.
-      await supabase.auth.signOut();
-      setMessage("Kata sandi berhasil diperbarui. Silakan masuk kembali dengan kata sandi baru.");
+      const { error: signOutError } = await supabase.auth.signOut();
+      setMessage(signOutError
+        ? "Kata sandi berhasil diperbarui. Jika sesi masih aktif, keluar lalu masuk kembali dengan kata sandi baru."
+        : "Kata sandi berhasil diperbarui. Silakan masuk kembali dengan kata sandi baru.");
       setPassword(""); setConfirmation("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Tidak dapat memperbarui kata sandi. Minta tautan pemulihan baru.");
