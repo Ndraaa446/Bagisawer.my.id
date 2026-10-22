@@ -9,7 +9,7 @@
 
 ## Verification results
 
-- GitHub Actions Quality checks: lint, typecheck, and production build passed for the preceding preview-readiness commit. The latest run for this batch must finish before treating the branch as CI-green.
+- GitHub Actions Quality checks run #19 (`39803342414`) passed: lint, typecheck, and production build all succeeded for the code/migration batch. The later commit only updates this status document.
 - Supabase migration `atomic_test_alert_rate_limit` applied successfully on project `gzfeyyflrnrqrnbvgsow`.
 - Read-only invariant query: 1 sandbox donation, 1 payment event, 2 ledger entries, 0 unbalanced donations, and 0 duplicate provider-event IDs.
 - Permission check: `enqueue_test_alert(uuid)` is executable by `service_role`, and not executable by `anon` or `authenticated`.
