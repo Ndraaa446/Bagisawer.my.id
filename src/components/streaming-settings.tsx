@@ -158,7 +158,7 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
     <main className="wrap dashboard-page">
       <header className="nav dashboard-nav">
         <Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
-        <div className="dashboard-user"><span>{email}</span><Link className="btn btn-ghost" href="/dashboard">Dashboard</Link><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
+        <div className="dashboard-user"><span>{email}</span><Link className="btn btn-ghost" href="/dashboard">Dashboard</Link><Link className="btn btn-ghost" href="/dashboard/payments/sandbox">Payment Sandbox</Link><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
       </header>
 
       <section className="dashboard-intro">
