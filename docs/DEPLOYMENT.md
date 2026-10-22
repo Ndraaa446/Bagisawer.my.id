@@ -14,10 +14,12 @@
 4. Set the required environment variables in Netlify site settings, not in Git:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` as a server-only secret, scoped to the preview runtime/build as required.
-5. Never expose service-role/secret keys through `NEXT_PUBLIC_*` variables, logs, screenshots, or repository files.
-6. Run install, lint, typecheck and production build checks. Netlify's configured build command runs lint, typecheck and build in sequence.
-7. Inspect preview logs and verify the exact commit SHA and preview URL before browser testing.
+   - `NEXT_PUBLIC_APP_URL` for preview/branch contexts
+   - `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` as a server-only secret, scoped to preview contexts only unless production use is explicitly approved.
+5. Confirm the public Supabase variables are available in the **build** scope for Deploy Preview and branch deploy contexts. The app's Supabase client throws when the URL or publishable key is missing.
+6. Never expose service-role/secret keys through `NEXT_PUBLIC_*` variables, logs, screenshots, or repository files.
+7. Run install, lint, typecheck and production build checks. Netlify's configured build command runs lint, typecheck and build in sequence.
+8. Inspect the Netlify build log after each failed preview; verify the exact commit SHA and preview URL before browser testing.
 
 ## Test gates before release
 1. Apply reviewed database migrations to a non-production environment first where possible; verify RLS and a forward-fix plan.
