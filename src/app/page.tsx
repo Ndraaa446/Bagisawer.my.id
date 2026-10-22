@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 const features = [
@@ -10,14 +13,20 @@ const features = [
 ];
 
 export default function HomePage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
   return (
     <main>
       <header className="wrap nav">
         <Link href="/" className="brand" aria-label="Bagisawer beranda"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
-        <nav className="nav-links" aria-label="Navigasi utama">
-          <a href="#fitur">Fitur</a><a href="#cara-kerja">Cara kerja</a><a href="#kreator">Untuk kreator</a><Link href="/explore">Jelajahi</Link><Link href="/faq">FAQ</Link>
+        <nav className={`nav-links ${menuOpen ? "nav-links-open" : ""}`} id="primary-navigation" aria-label="Navigasi utama">
+          <a href="#fitur" onClick={closeMenu}>Fitur</a><a href="#cara-kerja" onClick={closeMenu}>Cara kerja</a><a href="#kreator" onClick={closeMenu}>Untuk kreator</a><Link href="/explore" onClick={closeMenu}>Jelajahi</Link><Link href="/faq" onClick={closeMenu}>FAQ</Link>
+          <div className="mobile-nav-actions"><Link className="btn btn-ghost" href="/login" onClick={closeMenu}>Masuk</Link><Link className="btn btn-primary" href="/register" onClick={closeMenu}>Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
         </nav>
-        <div className="nav-actions"><Link className="btn btn-ghost" href="/login">Masuk</Link><Link className="btn btn-primary" href="/register">Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
+        <div className="nav-actions desktop-nav-actions"><Link className="btn btn-ghost" href="/login">Masuk</Link><Link className="btn btn-primary" href="/register">Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
+        <button className={`hamburger ${menuOpen ? "hamburger-open" : ""}`} type="button" aria-label={menuOpen ? "Tutup menu" : "Buka menu"} aria-controls="primary-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}>
+          <span/><span/><span/>
+        </button>
       </header>
 
       <section className="wrap hero">
