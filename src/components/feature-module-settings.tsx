@@ -153,10 +153,37 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
           setNotice(`${field.label}: masukkan angka yang valid${field.min !== undefined ? ` (minimum ${field.min})` : ""}${field.max !== undefined ? ` (maksimum ${field.max})` : ""}.`);
           return;
         }
+        if (!Number.isSafeInteger(numericValue)) {
+          setNotice(`${field.label}: gunakan bilangan bulat.`);
+          return;
+        }
       }
       if ((field.type === "text" || field.type === "textarea") && typeof value === "string" && value.length > 2000) {
         setNotice(`${field.label}: teks terlalu panjang (maksimum 2.000 karakter).`);
         return;
+      }
+      if (field.key === "deadline" && typeof value === "string" && value.trim()) {
+        const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value.trim());
+        const date = match ? new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00Z`) : null;
+        if (!match || !date || date.toISOString().slice(0, 10) !== value.trim()) {
+          setNotice("Tanggal target harus tanggal kalender valid dengan format YYYY-MM-DD.");
+          return;
+        }
+      }
+      if (field.key === "domains" && typeof value === "string" && value.trim()) {
+        const domains = value.split(/\\r?\\n/).map((domain) => domain.trim()).filter(Boolean);
+        const validDomain = domains.every((domain) => /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$/.test(domain));
+        if (!validDomain || new Set(domains.map((domain) => domain.toLowerCase())).size !== domains.length) {
+          setNotice("Daftar domain harus berisi hostname valid, satu per baris, tanpa duplikasi atau URL lengkap.");
+          return;
+        }
+      }
+      if (field.key === "suggested" && typeof value === "string" && value.trim()) {
+        const amounts = value.split(",").map((item) => Number(item.trim()));
+        if (amounts.some((amount) => !Number.isSafeInteger(amount) || amount < 1000 || amount > 100000000 || amount % 1000 !== 0)) {
+          setNotice("Nominal rekomendasi harus berupa angka kelipatan Rp1.000, antara Rp1.000 dan Rp100.000.000.");
+          return;
+        }
       }
     }
     try { window.localStorage.setItem(storageKey, JSON.stringify(values)); setNotice("Pengaturan tersimpan di browser ini saja; belum tersinkron ke akun/server atau event produksi."); } catch { setNotice("Browser tidak dapat menyimpan pengaturan lokal."); }
