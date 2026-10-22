@@ -53,6 +53,7 @@ async function resolveToken(token: string) {
       admin,
       userId: featureToken.user_id as string,
       featureKey,
+      featureConfiguration: (featureSetting?.configuration ?? {}) as Record<string, unknown>,
       eventTypes: featureEventTypes[featureKey] ?? [featureKey],
       excludeEventTypes: null as string[] | null
     };
@@ -136,6 +137,7 @@ export async function GET(_request: Request, context: Context) {
 
   return noStoreJson({
     featureKey,
+    featureConfiguration,
     settings: settings ?? { alert_enabled: true, minimum_amount: 1000, duration_seconds: 6, theme: "violet", sound_enabled: true },
     event
   });
