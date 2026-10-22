@@ -10,6 +10,7 @@ const methods = [
   { id: "qris", name: "QRIS", detail: "Satu kode untuk aplikasi pembayaran yang mendukung" },
   { id: "va", name: "Virtual Account", detail: "VA bank sesuai dukungan provider" },
   { id: "bank", name: "Transfer bank", detail: "Instruksi transfer dan konfirmasi terverifikasi" },
+  { id: "online-banking", name: "Mobile/online banking", detail: "Kanal bank yang didukung provider" },
   { id: "gopay", name: "GoPay", detail: "Dompet digital" },
   { id: "dana", name: "DANA", detail: "Dompet digital" },
   { id: "ovo", name: "OVO", detail: "Dompet digital" },
