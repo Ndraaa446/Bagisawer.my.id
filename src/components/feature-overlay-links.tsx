@@ -32,7 +32,7 @@ export function FeatureOverlayLinks({ features }: Props) {
   useEffect(() => { void refresh(); }, [refresh]);
 
   async function manage(featureKey: string, action: "create" | "revoke") {
-    if (busy) return;
+    if (busy || testBusy) return;
     if (action === "create" && statuses[featureKey]?.active && !window.confirm("Rotasi membuat URL lama untuk fitur ini langsung tidak berlaku. Lanjutkan?")) return;
     if (action === "revoke" && !window.confirm("Cabut URL overlay ini? Hanya overlay untuk fitur ini yang akan berhenti.")) return;
 
@@ -118,7 +118,7 @@ export function FeatureOverlayLinks({ features }: Props) {
               <div className="tool-card-footer">
                 <small>{status?.active ? "Tautan aktif" : "Belum aktif"}</small>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
-                  <button type="button" disabled={busy !== null} onClick={() => void manage(feature.slug, "create")}>{busy === feature.slug ? "Memproses…" : status?.active ? "Rotasi URL" : "Buat URL"}</button>
+                  <button type="button" disabled={busy !== null || testBusy !== null} onClick={() => void manage(feature.slug, "create")}>{busy === feature.slug ? "Memproses…" : status?.active ? "Rotasi URL" : "Buat URL"}</button>
                   {status?.active && <button type="button" disabled={busy !== null || testBusy !== null} onClick={() => void sendTest(feature.slug)}>{testBusy === feature.slug ? "Mengirim…" : "Tes alert"}</button>}
                   {status?.active && <button type="button" disabled={busy !== null || testBusy !== null} onClick={() => void manage(feature.slug, "revoke")}>Cabut</button>}
                 </div>
