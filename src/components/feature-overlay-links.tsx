@@ -111,7 +111,7 @@ export function FeatureOverlayLinks({ features }: Props) {
               <p>{feature.description}</p>
               <span className={`tool-badge ${status?.active ? "tool-badge-green" : "tool-badge-amber"}`}>{status?.active ? "Token aktif" : status ? "Belum dibuat / dicabut" : "Memeriksa status…"}</span>
               {url ? (
-                <div className="tool-overlay-url"><small>URL RAHASIA · {feature.slug.toUpperCase()}</small><code>{url}</code><button type="button" onClick={() => void copyUrl(feature.slug)}>Salin URL</button><small>Token mentah hanya tersedia saat dibuat/dirotasi. Simpan di tempat aman.</small></div>
+                <div className="tool-overlay-url"><small>URL RAHASIA · {feature.slug.toUpperCase()}</small><code>{url}</code><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" onClick={() => void copyUrl(feature.slug)}>Salin URL</button><a href={url} target="_blank" rel="noreferrer" className="btn btn-ghost">Buka overlay ↗</a></div><small>Token mentah hanya tersedia saat dibuat/dirotasi. Simpan di tempat aman.</small></div>
               ) : (
                 <div className="tool-overlay-url"><small>OVERLAY KHUSUS · {feature.slug.toUpperCase()}</small><code>{status?.active ? "URL lama tidak dapat ditampilkan ulang" : "Belum ada URL aktif"}</code><small>Token ini terpisah dari token fitur lain.</small></div>
               )}
