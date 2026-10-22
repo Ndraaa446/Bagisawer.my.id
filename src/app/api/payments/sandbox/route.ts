@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const eventId = `sandbox-success-${donation.reference}`;
     const canonical = JSON.stringify({ reference: donation.reference, eventId, eventType: "payment.succeeded", amount: donation.amount_idr, currency: donation.currency });
     const payloadHash = createHash("sha256").update(canonical).digest("hex");
-    const { data: result, error: rpcError } = await admin.schema("private").rpc("process_sandbox_payment_event", {
+    const { data: result, error: rpcError } = await admin.rpc("process_sandbox_payment_event", {
       p_reference: donation.reference,
       p_provider_event_id: eventId,
       p_event_type: "payment.succeeded",
