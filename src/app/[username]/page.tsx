@@ -49,7 +49,7 @@ export default async function PublicCreatorPage({ params }: Props) {
           <span className="profile-status status-public">Profil publik</span>
           <p>Halaman dukungan dan pembayaran belum aktif. Jangan kirim uang melalui tautan atau metode yang belum diverifikasi oleh Bagisawer.</p>
         </div>
-        <Link href="/features" className="btn btn-ghost">Pelajari Bagisawer <span aria-hidden="true">↗</span></Link>
+        <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}><Link href={`/${profile.username}/dukung`} className="btn btn-primary">Pratinjau dukungan <span aria-hidden="true">↗</span></Link><Link href="/features" className="btn btn-ghost">Pelajari Bagisawer <span aria-hidden="true">↗</span></Link></div>
       </section>
       <footer className="dashboard-footer">Bagisawer · Dibuat untuk kreator dan komunitas Indonesia</footer>
     </main>
