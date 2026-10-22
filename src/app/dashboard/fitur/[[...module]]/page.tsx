@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { FeatureOverlayLinks } from "@/components/feature-overlay-links";
+import { FeatureModuleSettings } from "@/components/feature-module-settings";
 
 type Feature = { slug: string; icon: string; title: string; description: string; group: string; overlay?: boolean; status?: string };
 const features: Feature[] = [
@@ -78,28 +79,7 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
     : current === "interaksi" ? features.filter((feature) => feature.group === "Interaksi")
     : current === "ekosistem" ? features.filter((feature) => feature.group === "Ekosistem")
     : current === "overlay" ? overlayTypes : features;
-  const moduleSettings: Record<string, Array<{ label: string; description: string }>> = {
-    saweran: [{label:"Nominal dukungan",description:"Nominal minimum, pilihan rekomendasi, dan batas maksimum."},{label:"Nama dan anonimitas",description:"Aturan penyamaran identitas pada feed, riwayat publik, dan alert."},{label:"Pesan pendukung",description:"Batas karakter, filter kata, dan alur moderasi."}],
-    anonim: [{label:"Tampilan identitas",description:"Sembunyikan nama dan metadata pribadi di semua permukaan publik."},{label:"Pengecualian privasi",description:"Pastikan identitas asli hanya tersedia untuk pemrosesan internal yang sah."}],
-    pesan: [{label:"Aturan pesan",description:"Batas karakter, bahasa, filter spam, dan sanitasi teks."},{label:"Moderasi",description:"Pilihan tahan, sembunyikan, atau izinkan pesan sebelum ditampilkan."}],
-    target: [{label:"Target dan tenggat",description:"Nama target, nominal, tanggal akhir, dan aturan progres."},{label:"Tampilan overlay",description:"Progress bar, label, milestone, dan format angka."}],
-    mediashare: [{label:"Batas media",description:"Durasi maksimum, domain yang diizinkan, dan format URL."},{label:"Keamanan dan moderasi",description:"Validasi URL di server, perlindungan SSRF, antrean review, dan skip."}],
-    voicenote: [{label:"Batas file",description:"Format, ukuran, durasi, dan penyimpanan privat."},{label:"Persetujuan audio",description:"Moderasi, mute, skip, serta kontrol pemutaran."}],
-    lagu: [{label:"Provider lagu",description:"Integrasi resmi dan sumber playback yang diizinkan."},{label:"Aturan antrean",description:"Batas permintaan, duplikasi, kata terlarang, dan skip."}],
-    qris: [{label:"QR halaman dukungan",description:"QR mengarah ke URL Bagisawer; bukan QR rekening/pembayaran palsu."},{label:"Privasi dan berbagi",description:"Pratinjau QR, unduh gambar, dan tautan publik."}],
-    leaderboard: [{label:"Periode peringkat",description:"Harian, mingguan, bulanan, dan sepanjang waktu."},{label:"Privasi",description:"Dukungan anonim tidak boleh muncul sebagai identitas di peringkat."}],
-    subathon: [{label:"Timer",description:"Durasi awal, tambahan waktu per event, dan batas maksimum."},{label:"Kontrol siaran",description:"Mulai, jeda, lanjutkan, hentikan, dan histori event."}],
-    "running-text": [{label:"Tampilan teks",description:"Kecepatan, durasi, arah, warna, dan batas karakter."},{label:"Moderasi",description:"Filter spam dan review sebelum teks tampil di siaran."}],
-    soundboard: [{label:"Suara dan trigger",description:"Daftar suara, volume, trigger, dan batas frekuensi."},{label:"Keamanan audio",description:"Batas volume, cooldown, dan kontrol mute."}],
-    polling: [{label:"Pertanyaan dan opsi",description:"Judul, pilihan jawaban, batas waktu, dan penutupan voting."},{label:"Anti-abuse",description:"Batas suara per pengguna dan hasil yang tervalidasi server."}],
-    "vip-queue": [{label:"Aturan prioritas",description:"Kriteria prioritas dan batas jumlah antrean."},{label:"Transparansi",description:"Urutan, alasan perubahan, dan histori moderator."}],
-    bagpao: [{label:"Spesifikasi modul",description:"Perilaku dan aturan produk perlu ditetapkan sebelum implementasi."}],
-    gachaton: [{label:"Aturan dan hasil",description:"Probabilitas, transparansi, histori, dan batas interaksi."},{label:"Tinjauan wajib",description:"Perlu review hukum/keamanan bila melibatkan uang atau hadiah."}],
-    bidcoin: [{label:"Poin internal",description:"Aturan perolehan/penggunaan, histori, batas, dan masa berlaku."},{label:"Batasan produk",description:"Tidak diposisikan sebagai uang atau aset finansial nyata."}],
-    store: [{label:"Katalog dan stok",description:"Produk, harga, inventaris, dan status ketersediaan."},{label:"Pesanan dan pemenuhan",description:"Pengiriman, refund, laporan, dan integrasi supplier."}],
-    notifikasi: [{label:"Kanal",description:"Email dan notifikasi dalam aplikasi beserta preferensi."},{label:"Template dan status",description:"Template pesan, status terkirim/gagal, dan retry."}],
-    kompetisi: [{label:"Aturan kompetisi",description:"Periode, kategori, syarat, dan metode penilaian."},{label:"Klip dan hasil",description:"Pengiriman klip, moderasi, hasil, dan histori perubahan."}]
-  };
+
 
   return (
     <main className="wrap dashboard-page tool-center">
@@ -131,7 +111,7 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
       {currentFeature ? (
         <>
           <div className="tool-section-head"><div><h2>Pengaturan {currentFeature.title}</h2><p>Rancangan layar untuk konfigurasi fitur. Penyimpanan pengaturan dan event produksi akan diaktifkan setelah backend modul siap.</p></div><Badge tone="amber">Konfigurasi belum tersimpan</Badge></div>
-          <div className="tool-grid">{(moduleSettings[currentFeature.slug] ?? [{label:"Pengaturan modul",description:"Atur perilaku, batas, akses, dan tampilan setelah spesifikasi modul selesai."}]).map((setting) => <article className="tool-card" key={setting.label}><div className="tool-icon">⚙</div><h3>{setting.label}</h3><p>{setting.description}</p><Badge tone="amber">Menunggu backend</Badge></article>)}</div>
+          <FeatureModuleSettings key={currentFeature.slug} featureKey={currentFeature.slug} title={currentFeature.title} />
           {currentFeature.overlay ? <><div className="tool-section-head"><div><h2>Overlay khusus {currentFeature.title}</h2><p>Token dan URL ini hanya berlaku untuk fitur ini.</p></div></div><FeatureOverlayLinks features={[currentFeature]} /></> : <div className="tool-empty">Modul ini belum memerlukan overlay tersendiri atau integrasi overlay belum ditetapkan.</div>}
           <div className="tool-card-footer"><small>Kembali ke kategori {currentFeature.group.toLowerCase()}</small><Link href={currentFeature.group === "Donasi" ? "/dashboard/fitur/donasi" : currentFeature.group === "Interaksi" ? "/dashboard/fitur/interaksi" : "/dashboard/fitur/ekosistem"}>Kembali ↗</Link></div>
         </>
