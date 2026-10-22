@@ -56,14 +56,17 @@ The preview's SSO restriction currently prevents the available external browser 
 - The creator dashboard now links to the feature center.
 - Added a public creator support-page UI at `/[username]/dukung`, linked from the public creator profile. It supports amount selection, custom amount, optional name/message, anonymity toggle, and selecting a payment method in the UI.
 - Listed QRIS, virtual account, bank transfer, GoPay, DANA, OVO, ShopeePay, LinkAja, debit/credit card, and retail payment methods. Every method is explicitly labelled unavailable because no external provider is configured.
-- Listed distinct overlay slots for each donation/interaction module. These are design slots only: per-feature token generation, route authorization, and event filtering are not yet implemented. Do not copy or use placeholder overlay labels as URLs.
+- Added a server-only `creator_feature_overlay_tokens` table with one revocable token per creator + feature. Browser roles have no table access; the API issues, rotates, lists, and revokes each feature token separately.
+- Added `/api/streaming/overlay-links` for per-feature token management and `/api/streaming/overlay-links/test` for a feature-specific test alert. The overlay resolver now checks feature tokens and filters pending events by feature type while preserving existing general OBS tokens.
+- Added `enqueue_feature_test_alert` as a server-only RPC with a per-creator/per-feature advisory lock, active-token check, alert-enabled check, and 3-second cooldown. SQL privilege check confirms `service_role` can execute it and `anon`/`authenticated` cannot.
+- The feature center now has dedicated display sections for finance/payouts, analytics/reports, notifications, moderation/admin, and account settings. These screens use empty states rather than fabricated transaction or balance figures.
 - The support-page submit action only displays a disabled-checkout notice; it does not create a transaction or accept money.
 - The latest branch commits trigger a Vercel status failure due to the account deployment-rate limit. No manual deployment was requested or performed. Fresh GitHub Actions/Netlify results for the latest UI batch are not yet confirmed.
 
 ## Next implementation batch
 
-1. Implement per-feature overlay tokens and isolated event filters; retain compatibility with the existing general OBS token.
-2. Add module-specific configuration screens for goals, mediashare, voice notes, song requests, leaderboard, subathon, running text, soundboard, polling, VIP queue, Bagpao, Gachaton, Bidcoin, store/vouchers, and competitions/clips.
-3. Add support-page method validation and a provider-adapter boundary, keeping every live checkout disabled until a provider is selected and verified.
-4. Continue dashboard surfaces for transaction history, balances, payout requests, profile/theme, moderation, notifications, and admin controls.
+1. Add module-specific event producers/configuration for goals, mediashare, voice notes, song requests, leaderboard, subathon, running text, soundboard, polling, VIP queue, Bagpao, Gachaton, Bidcoin, store/vouchers, and competitions/clips; the per-feature token/queue foundation now exists.
+2. Add support-page server validation and a provider-adapter boundary, keeping every live checkout disabled until a provider is selected and verified.
+3. Finish persistent settings and CRUD flows behind the finance, analytics, notification, moderation, and admin screens.
+4. Test token creation/rotation/revocation, event isolation, feature test alerts, and OBS Browser Source when preview access allows it.
 5. Only then run consolidated UI/flow testing; keep login/recovery verification deferred as previously requested unless separately authorized.
