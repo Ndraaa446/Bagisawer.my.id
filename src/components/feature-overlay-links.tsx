@@ -29,7 +29,19 @@ export function FeatureOverlayLinks({ features }: Props) {
     }
   }, []);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    void refresh();
+    // The server stores only a hash of each bearer token, so preserve the
+    // one-time plaintext URL in this browser until the creator revokes it.
+    const saved: Record<string, string> = {};
+    for (const feature of features) {
+      try {
+        const url = window.localStorage.getItem(`bagisawer:overlay-url:${feature.slug}`);
+        if (url && /^https?:\\/\\//i.test(url)) saved[feature.slug] = url;
+      } catch { /* Clipboard/manual copy remains available during this session. */ }
+    }
+    if (Object.keys(saved).length) setUrls((previous) => ({ ...saved, ...previous }));
+  }, [refresh, features]);
 
   async function manage(featureKey: string, action: "create" | "revoke") {
     if (busy || testBusy) return;
@@ -50,11 +62,13 @@ export function FeatureOverlayLinks({ features }: Props) {
       if (!response.ok) throw new Error(data.error ?? "Permintaan overlay gagal.");
       if (action === "create") {
         setUrls((previous) => ({ ...previous, [featureKey]: data.url }));
+        try { window.localStorage.setItem(`bagisawer:overlay-url:${featureKey}`, data.url); } catch { /* Keep URL in component state if storage is unavailable. */ }
         setStatuses((previous) => ({ ...previous, [featureKey]: { active: true, createdAt: new Date().toISOString() } }));
         setNotice(`URL khusus ${featureKey} dibuat. Salin dan simpan sekarang; URL lama untuk fitur ini tidak berlaku lagi.`);
       } else {
         setStatuses((previous) => ({ ...previous, [featureKey]: { active: false, createdAt: previous[featureKey]?.createdAt ?? null } }));
         setUrls((previous) => { const next = { ...previous }; delete next[featureKey]; return next; });
+        try { window.localStorage.removeItem(`bagisawer:overlay-url:${featureKey}`); } catch { /* Ignore unavailable storage. */ }
         setNotice(`URL overlay ${featureKey} sudah dicabut.`);
       }
     } catch (e) {
@@ -115,9 +129,9 @@ export function FeatureOverlayLinks({ features }: Props) {
               <p>{feature.description}</p>
               <span className={`tool-badge ${status?.active ? "tool-badge-green" : "tool-badge-amber"}`}>{status?.active ? "Token aktif" : status ? "Belum dibuat / dicabut" : "Memeriksa status…"}</span>
               {url ? (
-                <div className="tool-overlay-url"><small>URL RAHASIA · {feature.slug.toUpperCase()}</small><code>{url}</code><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" onClick={() => void copyUrl(feature.slug)}>Salin URL</button><a href={url} target="_blank" rel="noreferrer" className="btn btn-ghost">Buka overlay ↗</a></div><small>Token mentah hanya tersedia saat dibuat/dirotasi. Simpan di tempat aman.</small></div>
+                <div className="tool-overlay-url"><small>URL RAHASIA · {feature.slug.toUpperCase()}</small><code>{url}</code><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" onClick={() => void copyUrl(feature.slug)}>Salin URL</button><a href={url} target="_blank" rel="noreferrer" className="btn btn-ghost">Buka overlay ↗</a></div><small>URL disimpan di browser ini agar tetap bisa disalin setelah halaman dimuat ulang. Salin juga ke tempat aman; jangan bagikan URL rahasia.</small></div>
               ) : (
-                <div className="tool-overlay-url"><small>OVERLAY KHUSUS · {feature.slug.toUpperCase()}</small><code>{status?.active ? "URL lama tidak dapat ditampilkan ulang" : "Belum ada URL aktif"}</code><small>Token ini terpisah dari token fitur lain.</small></div>
+                <div className="tool-overlay-url"><small>OVERLAY KHUSUS · {feature.slug.toUpperCase()}</small><code>{status?.active ? "URL belum tersimpan di browser ini" : "Belum ada URL aktif"}</code><small>Token ini terpisah dari token fitur lain.</small></div>
               )}
               <div className="tool-card-footer">
                 <small>{status?.active ? "Tautan aktif" : "Belum aktif"}</small>
