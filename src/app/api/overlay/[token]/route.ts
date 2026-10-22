@@ -6,12 +6,51 @@ export const dynamic = "force-dynamic";
 
 type Context = { params: Promise<{ token: string }> };
 
+const featureEventTypes: Record<string, string[]> = {
+  saweran: ["test", "donation", "sandbox_donation"],
+  anonim: ["donation_anonymous"],
+  pesan: ["donation_message"],
+  target: ["goal", "milestone"],
+  mediashare: ["mediashare"],
+  voicenote: ["voicenote"],
+  lagu: ["lagu", "song_request"],
+  qris: ["qris"],
+  leaderboard: ["leaderboard"],
+  subathon: ["subathon"],
+  "running-text": ["running-text"],
+  soundboard: ["soundboard"],
+  polling: ["polling"],
+  "vip-queue": ["vip-queue"],
+  bagpao: ["bagpao"],
+  gachaton: ["gachaton"],
+  bidcoin: ["bidcoin"]
+};
+
 async function resolveToken(token: string) {
   if (!token || token.length < 40 || token.length > 100) return null;
   const admin = createAdminClient();
   if (!admin) return null;
 
   const tokenHash = createHash("sha256").update(token).digest("hex");
+  const { data: featureToken, error: featureError } = await admin
+    .from("creator_feature_overlay_tokens")
+    .select("user_id, feature_key")
+    .eq("token_hash", tokenHash)
+    .is("revoked_at", null)
+    .maybeSingle();
+
+  if (featureError) return null;
+  if (featureToken) {
+    const featureKey = featureToken.feature_key as string;
+    return {
+      admin,
+      userId: featureToken.user_id as string,
+      featureKey,
+      eventTypes: featureEventTypes[featureKey] ?? [featureKey]
+    };
+  }
+
+  // Keep previously-issued general OBS tokens working during the transition.
   const { data, error } = await admin
     .from("overlay_tokens")
     .select("user_id")
@@ -20,7 +59,7 @@ async function resolveToken(token: string) {
     .maybeSingle();
 
   if (error || !data) return null;
-  return { admin, userId: data.user_id as string };
+  return { admin, userId: data.user_id as string, featureKey: "general", eventTypes: null as string[] | null };
 }
 
 function noStoreJson(body: unknown, status = 200) {
@@ -41,42 +80,38 @@ export async function GET(_request: Request, context: Context) {
   const { token } = await context.params;
   const resolved = await resolveToken(token);
   if (!resolved) {
-    if (!createAdminClient()) {
-      return noStoreJson({ error: "Overlay belum dikonfigurasi." }, 503);
-    }
+    if (!createAdminClient()) return noStoreJson({ error: "Overlay belum dikonfigurasi." }, 503);
     return notFound();
   }
 
-  const { admin, userId } = resolved;
+  const { admin, userId, featureKey, eventTypes } = resolved;
   const { data: settings, error: settingsError } = await admin
     .from("creator_stream_settings")
     .select("alert_enabled, minimum_amount, duration_seconds, theme, sound_enabled")
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (settingsError) {
-    return noStoreJson({ error: "Pengaturan overlay belum dapat dibaca." }, 503);
-  }
+  if (settingsError) return noStoreJson({ error: "Pengaturan overlay belum dapat dibaca." }, 503);
 
   let event = null;
   if (settings?.alert_enabled !== false) {
-    const { data, error: eventError } = await admin
+    let eventQuery = admin
       .from("alert_events")
       .select("id, event_type, source, donor_name, message, amount, created_at")
       .eq("user_id", userId)
       .eq("status", "pending")
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+    if (eventTypes) eventQuery = eventQuery.in("event_type", eventTypes);
+    const { data, error: eventError } = await eventQuery.maybeSingle();
 
-    if (eventError) {
-      return noStoreJson({ error: "Antrean alert belum dapat dibaca." }, 503);
-    }
+    if (eventError) return noStoreJson({ error: "Antrean alert belum dapat dibaca." }, 503);
     event = data;
   }
 
   return noStoreJson({
+    featureKey,
     settings: settings ?? { alert_enabled: true, minimum_amount: 1000, duration_seconds: 6, theme: "violet", sound_enabled: true },
     event
   });
@@ -86,9 +121,7 @@ export async function POST(request: Request, context: Context) {
   const { token } = await context.params;
   const resolved = await resolveToken(token);
   if (!resolved) {
-    if (!createAdminClient()) {
-      return noStoreJson({ error: "Overlay belum dikonfigurasi." }, 503);
-    }
+    if (!createAdminClient()) return noStoreJson({ error: "Overlay belum dikonfigurasi." }, 503);
     return notFound();
   }
 
@@ -103,12 +136,14 @@ export async function POST(request: Request, context: Context) {
     return noStoreJson({ error: "ID event tidak valid." }, 400);
   }
 
-  const { error, count } = await resolved.admin
+  let acknowledgeQuery = resolved.admin
     .from("alert_events")
     .update({ status: "displayed", displayed_at: new Date().toISOString() }, { count: "exact" })
     .eq("id", body.eventId)
     .eq("user_id", resolved.userId)
     .eq("status", "pending");
+  if (resolved.eventTypes) acknowledgeQuery = acknowledgeQuery.in("event_type", resolved.eventTypes);
+  const { error, count } = await acknowledgeQuery;
 
   if (error) return noStoreJson({ error: "Event belum dapat ditandai selesai." }, 500);
   if (count === 0) return noStoreJson({ ok: true, alreadyHandled: true });
