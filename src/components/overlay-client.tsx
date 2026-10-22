@@ -122,7 +122,7 @@ export function OverlayClient({ token }: { token: string }) {
         .overlay-running-text strong{color:#754426;margin-right:12px}
         .overlay-module-card{display:flex;gap:16px;align-items:center;max-width:700px;padding:20px 24px;border:1px solid #d9c8b7;border-radius:12px;background:#fffdf9;box-shadow:none;backdrop-filter:none;color:#302319}
         .overlay-module-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;background:#f0e3d7;color:#754426;font-size:23px;flex-shrink:0}
-        .overlay-module-copy strong{font-size:19px;display:block}.overlay-module-copy p{font-size:13px;color:#ddd6eb;line-height:1.6;margin:5px 0}
+        .overlay-module-copy strong{font-size:19px;display:block}.overlay-module-copy p{font-size:13px;color:#5b463b;line-height:1.6;margin:5px 0}
         .overlay-module-copy b{font-size:15px;color:#c4b5fd}
       `}</style>
       {activeAlert && (featureKey === "running-text" ? (
