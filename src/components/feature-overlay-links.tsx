@@ -24,34 +24,25 @@ export function FeatureOverlayLinks({ features }: Props) {
         next[item.featureKey] = { active: Boolean(item.active), createdAt: item.createdAt ?? null };
       }
       setStatuses(next);
+      const saved: Record<string, string> = {};
+      for (const feature of features) {
+        try {
+          const url = window.localStorage.getItem(`bagisawer:overlay-url:${feature.slug}`);
+          if (next[feature.slug]?.active && url && /^https?:\/\//i.test(url)) saved[feature.slug] = url;
+          if (!next[feature.slug]?.active) window.localStorage.removeItem(`bagisawer:overlay-url:${feature.slug}`);
+        } catch { /* Ignore unavailable storage. */ }
+      }
       setUrls((previous) => {
-        const updated = { ...previous };
-        for (const feature of features) {
-          if (!next[feature.slug]?.active) {
-            delete updated[feature.slug];
-            try { window.localStorage.removeItem(`bagisawer:overlay-url:${feature.slug}`); } catch { /* Ignore unavailable storage. */ }
-          }
-        }
-        return updated;
+        const updated: Record<string, string> = {};
+        for (const [key, value] of Object.entries(previous)) if (next[key]?.active) updated[key] = value;
+        return { ...saved, ...updated };
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Status overlay belum dapat dimuat.");
     }
   }, [features]);
 
-  useEffect(() => {
-    void refresh();
-    // The server stores only a hash of each bearer token, so preserve the
-    // one-time plaintext URL in this browser until the creator revokes it.
-    const saved: Record<string, string> = {};
-    for (const feature of features) {
-      try {
-        const url = window.localStorage.getItem(`bagisawer:overlay-url:${feature.slug}`);
-        if (url && /^https?:\/\//i.test(url)) saved[feature.slug] = url;
-      } catch { /* Clipboard/manual copy remains available during this session. */ }
-    }
-    if (Object.keys(saved).length) setUrls((previous) => ({ ...saved, ...previous }));
-  }, [refresh, features]);
+  useEffect(() => { void refresh(); }, [refresh]);
 
   async function manage(featureKey: string, action: "create" | "revoke") {
     if (busy || testBusy) return;
