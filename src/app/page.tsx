@@ -15,7 +15,7 @@ export default function HomePage() {
       <header className="wrap nav">
         <Link href="/" className="brand" aria-label="Bagisawer beranda"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
         <nav className="nav-links" aria-label="Navigasi utama">
-          <a href="#fitur">Fitur</a><a href="#cara-kerja">Cara kerja</a><a href="#kreator">Untuk kreator</a>
+          <a href="#fitur">Fitur</a><a href="#cara-kerja">Cara kerja</a><a href="#kreator">Untuk kreator</a><Link href="/explore">Jelajahi</Link><Link href="/faq">FAQ</Link>
         </nav>
         <div className="nav-actions"><Link className="btn btn-ghost" href="/login">Masuk</Link><Link className="btn btn-primary" href="/register">Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
       </header>
