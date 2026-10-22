@@ -2,34 +2,38 @@
 
 Updated: 2026-10-22
 
-## Repository baseline
+## Repository and connected services
 - GitHub repository: https://github.com/Ndraaa446/Bagisawer.my.id
 - Default branch: main
-- Initial repository reported empty before the foundation commits.
-- Supabase project discovered: bagisawer.my.id; migration list initially empty.
-- Vercel project discovered: bagisawer, linked to this GitHub repository.
+- Repository was initially empty when inspected.
+- Supabase project: bagisawer.my.id (active); migration list was empty at initial inspection.
+- Vercel project: bagisawer, linked to the GitHub repository.
 
-## Completed in repository
-- Product feature matrix, product specification and architecture documentation.
-- Initial Next.js App Router/TypeScript scaffold.
-- Original responsive Indonesian landing page and dark/violet design system.
-- Supabase browser/server client helpers with environment validation.
-- Environment template and initial security/payment/deployment/testing documentation.
-- Basic security response headers.
+## Implemented in repository
+- Product feature matrix, product specification and architecture docs.
+- Next.js App Router scaffold, strict TypeScript configuration and ESLint config.
+- Original responsive Indonesian landing page with dark/violet styling.
+- Public features, FAQ, documentation landing, support, terms draft and privacy draft routes.
+- Supabase browser/server client helpers with explicit missing-environment errors.
+- Supabase Auth sign-up/sign-in form and server sign-out route.
+- Authenticated dashboard entry page that redirects unauthenticated users to login.
+- Environment template and initial security/payment/deployment/testing docs.
+- Basic security response headers and .gitignore rules.
 
 ## Not yet verified
-- No local install/build/lint/typecheck has been executed in this session.
-- Authentication screens and callback flow are not implemented.
-- No database migration has been applied.
-- No RLS policies have been tested.
-- No payment provider or email provider is configured.
-- No production payment, payout, overlay event pipeline or store delivery is active.
-- Deployment status has not yet been confirmed.
+- No local install, lint, typecheck or production build was run during this session.
+- Vercel automatically queued deployments for the sequence of commits; final deployment status/build result is not yet verified.
+- No database migration has been applied and no RLS policy has been tested.
+- Supabase Auth email confirmation and redirect URLs still require dashboard configuration.
+- No payment provider, email provider, licensed media provider or voucher supplier is configured.
+- No real payment, payout, production alert pipeline, store delivery, or complete creator/admin dashboard is active.
+- Privacy and terms are drafts, not final legal policies.
 
-## Next work
-1. Run install, lint, typecheck and build in a real build environment; fix errors and commit lockfile.
-2. Implement authentication routes and middleware/session refresh.
-3. Design and review the first additive migration for profiles/roles/creator settings and RLS.
-4. Add creator dashboard and public creator page backed by Supabase.
-5. Implement payments only after selecting and approving a provider.
-6. Continue modules according to FEATURE_MATRIX.md; update status only with test evidence.
+## Next steps
+1. Inspect the latest Vercel deployment and resolve build issues.
+2. Run install, lint, typecheck and production build; commit a package lockfile.
+3. Configure Supabase Auth redirect URLs and email verification.
+4. Generate and review an additive migration for profiles, role assignments and creator settings; enable and test RLS before applying.
+5. Build creator profile/dashboard and settings backed by the database.
+6. Select payment provider and implement sandbox, webhook verification, ledger and reconciliation only after approval.
+7. Continue all modules according to FEATURE_MATRIX.md, recording test evidence for each status change.
