@@ -86,7 +86,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
     <main className="wrap dashboard-page">
       <header className="nav dashboard-nav">
         <Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
-        <div className="dashboard-user"><span>{email}</span><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
+        <div className="dashboard-user"><span>{email}</span><Link className="btn btn-ghost" href="/dashboard/streaming">Livestream & OBS</Link><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
       </header>
 
       <section className="dashboard-intro">
