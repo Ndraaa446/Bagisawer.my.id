@@ -34,7 +34,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ use
   const admin = createAdminClient();
   if (!admin) return json({ error: "Pilihan dukungan belum tersedia." }, 503);
   const { data: creator, error: creatorError } = await admin.from("creator_profiles")
-    .select("id, user_id, username").eq("username", username.toLowerCase()).eq("is_public", true).maybeSingle();
+    .select("user_id, username").eq("username", username.toLowerCase()).eq("is_public", true).maybeSingle();
   if (creatorError) return json({ error: "Pilihan dukungan belum dapat dimuat." }, 503);
   if (!creator) return json({ error: "Kreator tidak ditemukan." }, 404);
   const { data, error } = await admin.from("creator_feature_settings").select("feature_key, enabled").eq("user_id", creator.user_id);
