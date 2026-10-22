@@ -53,12 +53,26 @@ export async function GET() {
     .eq("user_id", user.id);
 
   if (error) return json({ error: "Status overlay per fitur belum dapat dibaca." }, 503);
+  const { data: settings, error: settingsError } = await admin
+    .from("creator_feature_settings")
+    .select("feature_key, enabled, minimum_amount, overlay_enabled")
+    .eq("user_id", user.id);
+  if (settingsError) return json({ error: "Status aktivasi fitur belum dapat dibaca." }, 503);
   const byFeature = new Map<string, { feature_key: string; revoked_at: string | null; created_at: string | null }>();
   for (const row of data ?? []) byFeature.set(row.feature_key, row);
+  const settingByFeature = new Map((settings ?? []).map((row) => [row.feature_key, row]));
   return json({
     features: FEATURE_KEYS.map((featureKey) => {
       const row = byFeature.get(featureKey);
-      return { featureKey, active: Boolean(row && !row.revoked_at), createdAt: row?.created_at ?? null };
+      const setting = settingByFeature.get(featureKey);
+      return {
+        featureKey,
+        active: Boolean(row && !row.revoked_at),
+        createdAt: row?.created_at ?? null,
+        supportEnabled: featureKey === "saweran" || Boolean(setting?.enabled),
+        overlayEnabled: Boolean(setting?.overlay_enabled),
+        minimumAmount: setting?.minimum_amount ?? 1000
+      };
     })
   });
 }
