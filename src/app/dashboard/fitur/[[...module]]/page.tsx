@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
-import { useParams } from "next/navigation";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
 type Feature = { slug: string; icon: string; title: string; description: string; group: string; overlay?: boolean; status?: string };
 const features: Feature[] = [
@@ -55,17 +53,17 @@ function Badge({ children, tone = "muted" }: { children: React.ReactNode; tone?:
   return <span className={`tool-badge tool-badge-${tone}`}>{children}</span>;
 }
 
-export default function CreatorFeatureCenter() {
-  const params = useParams<{ module?: string[] }>();
-  const current = params?.module?.[0] ?? "ringkasan";
+export default async function CreatorFeatureCenter({ params }: { params: Promise<{ module?: string[] }> }) {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) redirect("/login");
+  const routeParams = await params;
+  const current = routeParams.module?.[0] ?? "ringkasan";
   const title = sections.find((item) => item.slug === current)?.title ?? "Pusat fitur";
-  const visibleFeatures = useMemo(() => {
-    if (current === "donasi") return features.filter((feature) => feature.group === "Donasi");
-    if (current === "interaksi") return features.filter((feature) => feature.group === "Interaksi");
-    if (current === "ekosistem") return features.filter((feature) => feature.group === "Ekosistem");
-    if (current === "overlay") return overlayTypes;
-    return features;
-  }, [current]);
+  const visibleFeatures = current === "donasi" ? features.filter((feature) => feature.group === "Donasi")
+    : current === "interaksi" ? features.filter((feature) => feature.group === "Interaksi")
+    : current === "ekosistem" ? features.filter((feature) => feature.group === "Ekosistem")
+    : current === "overlay" ? overlayTypes : features;
 
   return (
     <main className="wrap dashboard-page tool-center">
