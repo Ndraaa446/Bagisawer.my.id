@@ -106,7 +106,7 @@ export function FeatureOverlayLinks({ features }: Props) {
           const status = statuses[feature.slug];
           const url = urls[feature.slug];
           return (
-            <article className="tool-card" key={feature.slug}>
+            <article className="tool-card" id={feature.slug} key={feature.slug}>
               <div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><span className="tool-badge">{feature.group}</span></div></div>
               <p>{feature.description}</p>
               <span className={`tool-badge ${status?.active ? "tool-badge-green" : "tool-badge-amber"}`}>{status?.active ? "Token aktif" : status ? "Belum dibuat / dicabut" : "Memeriksa status…"}</span>
