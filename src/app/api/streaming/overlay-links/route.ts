@@ -30,6 +30,19 @@ function unavailable() {
   return json({ error: "Layanan overlay belum dikonfigurasi. Periksa secret Supabase khusus server." }, 503);
 }
 
+function appOrigin(request: Request) {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configured) {
+    try {
+      const url = new URL(configured);
+      if (url.protocol === "https:" || url.protocol === "http:") return url.origin;
+    } catch {
+      // Fall back to the request origin only when the configured value is invalid.
+    }
+  }
+  return new URL(request.url).origin;
+}
+
 export async function GET() {
   const user = await currentUser();
   if (!user) return json({ error: "Sesi masuk diperlukan." }, 401);
@@ -75,8 +88,7 @@ export async function POST(request: Request) {
 
   if (error) return json({ error: "Token khusus fitur gagal dibuat. Coba lagi." }, 500);
 
-  let origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "";
-  try { origin = new URL(request.url).origin; } catch { /* keep configured fallback */ }
+  const origin = appOrigin(request);
   return json({
     ok: true,
     featureKey: body.featureKey,
