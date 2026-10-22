@@ -52,7 +52,8 @@ const featureTitles: Record<string, string> = {
 
 export function OverlayClient({ token }: { token: string }) {
   const [settings, setSettings] = useState(fallbackSettings);
-  const [featureKey, setFeatureKey] = useState("general");\n  const [featureConfiguration, setFeatureConfiguration] = useState<Record<string, unknown>>({});
+  const [featureKey, setFeatureKey] = useState("general");
+  const [featureConfiguration, setFeatureConfiguration] = useState<Record<string, unknown>>({});
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [invalid, setInvalid] = useState(false);
   const activeRef = useRef(false);
@@ -71,7 +72,8 @@ export function OverlayClient({ token }: { token: string }) {
         const payload = await response.json() as Payload;
         if (stopped) return;
         setSettings(payload.settings ?? fallbackSettings);
-        setFeatureKey(payload.featureKey ?? "general");\n        setFeatureConfiguration(payload.featureConfiguration ?? {});
+        setFeatureKey(payload.featureKey ?? "general");
+        setFeatureConfiguration(payload.featureConfiguration ?? {});
         if (payload.event && !activeRef.current) {
           activeRef.current = true;
           setActiveAlert(payload.event);
@@ -111,7 +113,9 @@ export function OverlayClient({ token }: { token: string }) {
 
   if (invalid || !settings.alert_enabled) return null;
   const testLabel = activeAlert?.source === "test" || activeAlert?.event_type === "test";
-  const title = featureTitles[featureKey] ?? "Dukungan baru";\n  const messageLimit = Number(featureConfiguration.limit ?? featureConfiguration.messageLimit ?? 240);\n  const visibleMessage = activeAlert?.message ? activeAlert.message.slice(0, Number.isFinite(messageLimit) ? Math.max(0, Math.min(500, messageLimit)) : 240) : "";
+  const title = featureTitles[featureKey] ?? "Dukungan baru";
+  const messageLimit = Number(featureConfiguration.limit ?? featureConfiguration.messageLimit ?? 240);
+  const visibleMessage = activeAlert?.message ? activeAlert.message.slice(0, Number.isFinite(messageLimit) ? Math.max(0, Math.min(500, messageLimit)) : 240) : "";
 
   return (
     <main className="overlay-root" aria-live="polite">
