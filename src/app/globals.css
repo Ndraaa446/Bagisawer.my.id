@@ -560,3 +560,9 @@ body{background:var(--bg);color:var(--text)}
 .support-page .brand-mark{background:#8c5d40}
 .support-notice{background:#fff8e8;border-color:#ead6a9;color:#72531f}
 @media(prefers-reduced-motion:reduce){.creator-quick-menu a{transition:none}}
+
+/* Alerts stay clean in OBS: flat surfaces, no glow or neon bloom */
+.sample-alert,.overlay-alert,.overlay-root .overlay-alert{box-shadow:none!important;text-shadow:none!important;filter:none!important}
+.theme-neon .sample-alert{box-shadow:none!important;text-shadow:none!important;filter:none!important}
+.theme-neon .sample-alert-icon{box-shadow:none!important;filter:none!important}
+.overlay-root *{text-shadow:none}
