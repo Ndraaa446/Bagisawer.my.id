@@ -64,6 +64,7 @@ The preview's SSO restriction currently prevents the available external browser 
 - Added `enqueue_feature_test_alert` as a server-only RPC with a per-creator/per-feature advisory lock, active-token check, alert-enabled check, and 3-second cooldown. SQL privilege check confirms `service_role` can execute it and `anon`/`authenticated` cannot.
 - Added an explicit deny-all RLS policy for `anon` and `authenticated` on the feature-token table. The latest Supabase Security Advisor no longer reports an RLS-enabled-without-policy finding for this table; the leaked-password-protection warning remains.
 - The feature center now has dedicated display sections for finance/payouts, analytics/reports, notifications, moderation/admin, and account settings. These screens use empty states rather than fabricated transaction or balance figures.
+- Added module-detail routes at `/dashboard/fitur/modul/{slug}` for each listed donation/interaction/ecosystem feature, with feature-specific settings panels and its own overlay manager where applicable. Settings persistence and module event producers remain follow-up work.
 - The support-page submit action only displays a disabled-checkout notice; it does not create a transaction or accept money.
 - The latest branch commits trigger a Vercel status failure due to the account deployment-rate limit. No manual deployment was requested or performed. Fresh GitHub Actions/Netlify results for the latest UI batch are not yet confirmed.
 
