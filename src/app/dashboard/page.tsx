@@ -18,11 +18,11 @@ export default async function DashboardPage() {
   if (profileError || !profile) {
     return (
       <main className="wrap dashboard-page">
-        <header className="nav"><a href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></a></header>
+        <header className="nav"><Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link></header>
         <section className="feature-card dashboard-editor">
           <h1 className="dashboard-title">Profil belum siap</h1>
           <p className="dashboard-muted">Kami belum dapat memuat profil kreatormu. Muat ulang halaman beberapa saat lagi atau hubungi dukungan jika masalah berlanjut.</p>
-          <a href="/dashboard" className="btn btn-primary">Coba lagi</a>
+          <Link href="/dashboard" className="btn btn-primary">Coba lagi</Link>
         </section>
       </main>
     );
