@@ -1,7 +1,7 @@
 # Payment Flow
 
 ## Current status
-No payment provider is configured by this document. Payment acceptance and payouts must remain disabled until a provider is selected, credentials and approvals are present, and sandbox tests pass.
+No external payment provider is configured. An isolated Bagisawer sandbox foundation exists for simulated donations, idempotent test events, balanced append-only test ledger entries, and test-labeled OBS alerts. It does not contact a bank/e-wallet, prove an actual payment, or change production balances. Payment acceptance and payouts must remain disabled until a provider is selected, credentials and approvals are present, and provider sandbox tests pass.
 
 ## Required flow
 1. Validate creator, amount, currency, limits and request rate on the server.
