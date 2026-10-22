@@ -4,11 +4,11 @@ Statuses: Direncanakan, Sedang dikerjakan, Diimplementasikan, Sudah diuji, Siap 
 
 | Area | Scope | Initial status / gate |
 |---|---|---|
-| Public site | Home, explore, features, creator profile, docs, FAQ, contact, support, terms, privacy, refund, fees, status | Sedang dikerjakan; responsive and accessible |
-| Identity & roles | Registration, login/logout, email verification, reset, sessions, unique username, onboarding, RBAC, moderator, optional MFA | Direncanakan; server-validated roles |
+| Public site | Home, explore, features, creator profile, docs, FAQ, contact, support, terms, privacy, refund, fees, status | Sedang dikerjakan; landing and public creator profile route implemented, broader pages and accessibility testing remain |
+| Identity & roles | Registration, login/logout, email verification, reset, sessions, unique username, onboarding, RBAC, moderator, optional MFA | Sedang dikerjakan; Supabase Auth forms and session-gated dashboard exist; email flow, reset and role tests remain |
 | Creator tipping | Creator page, themes, suggested/custom amount, anonymous support, message, optional media/voice, goals, QR/share, privacy controls | Direncanakan; validation, spam controls, moderation |
 | Payments & finance | Checkout, statuses, provider adapter, signed webhook, idempotency, ledger, balances/holds, fees, withdrawals, refunds, disputes, reconciliation | Terblokir integrasi eksternal until provider approval and tests |
-| Creator dashboard | Overview, charts, transaction history/filter/search, balances, payouts, profile/theme, goals and stream settings | Direncanakan; real database required |
+| Creator dashboard | Overview, charts, transaction history/filter/search, balances, payouts, profile/theme, goals and stream settings | Sedang dikerjakan; profile editor and public/private visibility backed by Supabase; finance and stream modules remain |
 | Admin & moderation | Users, creators, roles, transactions, payouts, refunds, reports, media moderation, fees, products, support, audit, platform settings | Direncanakan; privileged server authorization |
 | Alertbox & overlay | Alerts, sounds, animations, thresholds, queue, preview/test, OBS browser source, real-time, token rotate/revoke | Direncanakan; test events separate from paid events |
 | Mediashare / voicenote | Submission queue, URL/file validation, duration/size limits, moderation, play/skip | Direncanakan; SSRF and upload protections |
@@ -23,7 +23,7 @@ Statuses: Direncanakan, Sedang dikerjakan, Diimplementasikan, Sudah diuji, Siap 
 | VIP queue / competitions | Queue and policy priority; streamer competitions and clip submissions/results | Direncanakan; transparent moderation/scoring |
 | Store / vouchers | Catalog, pricing, orders, inventory, delivery, refunds, reports | Terblokir integrasi eksternal; supplier API required |
 | Integrations & notifications | YouTube/streaming events, email, in-app notifications, widget API | Terblokir integrasi eksternal pending credentials/scopes |
-| Security | RLS, rate limiting, headers, validation, audit, secret rotation, incident response | Sedang dikerjakan; access tests required |
+| Security | RLS, rate limiting, headers, validation, audit, secret rotation, incident response | Sedang dikerjakan; profile RLS and headers added; owner/anonymous/cross-user access tests and other controls remain |
 | Delivery & docs | CI, lint, typecheck, tests, build, staging, product/schema/payment/security/deployment docs | Direncanakan; report actual results only |
 
 ## Delivery gates
