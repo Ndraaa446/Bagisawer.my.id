@@ -1,6 +1,7 @@
 [build]
-  command = "npm run lint && npm run typecheck && npm run build"
+  command = "node scripts/check-netlify-build-env.mjs && npm run lint && npm run typecheck && npm run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
