@@ -42,6 +42,13 @@ async function resolveToken(token: string) {
   if (featureError) return null;
   if (featureToken) {
     const featureKey = featureToken.feature_key as string;
+    const { data: featureSetting, error: featureSettingError } = await admin
+      .from("creator_feature_settings")
+      .select("overlay_enabled")
+      .eq("user_id", featureToken.user_id)
+      .eq("feature_key", featureKey)
+      .maybeSingle();
+    if (featureSettingError || featureSetting?.overlay_enabled !== true) return null;
     return {
       admin,
       userId: featureToken.user_id as string,
