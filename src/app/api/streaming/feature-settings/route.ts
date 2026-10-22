@@ -22,11 +22,11 @@ export async function GET() {
   const admin = createAdminClient();
   if (!admin) return json({ error: "Pengaturan fitur belum dikonfigurasi di server." }, 503);
   const { data, error: readError } = await admin.from("creator_feature_settings")
-    .select("feature_key, enabled").eq("user_id", user.id);
+    .select("feature_key, enabled, minimum_amount").eq("user_id", user.id);
   if (readError) return json({ error: "Pengaturan aktivasi fitur gagal dimuat." }, 503);
   const enabled = new Set((data ?? []).filter((row) => row.enabled).map((row) => row.feature_key));
   enabled.add("saweran");
-  return json({ features: FEATURE_KEYS.map((featureKey) => ({ featureKey, enabled: enabled.has(featureKey) })) });
+  return json({ features: FEATURE_KEYS.map((featureKey) => { const row = (data ?? []).find((item) => item.feature_key === featureKey); return { featureKey, enabled: enabled.has(featureKey), minimumAmount: row?.minimum_amount ?? 1000 }; }) });
 }
 export async function PUT(request: Request) {
   const supabase = await createClient();
@@ -34,17 +34,17 @@ export async function PUT(request: Request) {
   if (error || !user) return json({ error: "Sesi masuk diperlukan." }, 401);
   const admin = createAdminClient();
   if (!admin) return json({ error: "Pengaturan fitur belum dikonfigurasi di server." }, 503);
-  let body: { featureKey?: unknown; enabled?: unknown };
+  let body: { featureKey?: unknown; enabled?: unknown; minimumAmount?: unknown };
   try { body = await request.json(); } catch { return json({ error: "JSON permintaan tidak valid." }, 400); }
-  if (!isFeatureKey(body.featureKey) || typeof body.enabled !== "boolean") {
+  if (!isFeatureKey(body.featureKey) || typeof body.enabled !== "boolean" || (body.minimumAmount !== undefined && (!Number.isSafeInteger(body.minimumAmount) || Number(body.minimumAmount) < 1000 || Number(body.minimumAmount) > 100000000 || Number(body.minimumAmount) % 1000 !== 0))) {
     return json({ error: "Jenis fitur atau status aktivasi tidak valid." }, 400);
   }
   if (body.featureKey === "saweran" && !body.enabled) {
     return json({ error: "Fitur saweran utama tidak dapat dinonaktifkan dari menu ini." }, 400);
   }
   const { error: writeError } = await admin.from("creator_feature_settings").upsert({
-    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, updated_at: new Date().toISOString()
+    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: body.minimumAmount ?? 1000, updated_at: new Date().toISOString()
   }, { onConflict: "user_id,feature_key" });
   if (writeError) return json({ error: "Status aktivasi fitur gagal disimpan." }, 500);
-  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled });
+  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled, minimumAmount: body.minimumAmount ?? 1000 });
 }
