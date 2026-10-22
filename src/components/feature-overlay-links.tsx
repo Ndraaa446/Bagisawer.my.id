@@ -10,6 +10,7 @@ export function FeatureOverlayLinks({ features }: Props) {
   const [statuses, setStatuses] = useState<Record<string, OverlayStatus>>({});
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [testBusy, setTestBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -74,6 +75,28 @@ export function FeatureOverlayLinks({ features }: Props) {
     }
   }
 
+  async function sendTest(featureKey: string) {
+    if (testBusy || busy) return;
+    setTestBusy(featureKey);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/streaming/overlay-links/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featureKey }),
+        cache: "no-store"
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Alert uji gagal dikirim.");
+      setNotice(`Alert uji khusus ${featureKey} masuk ke antrean. Ini simulasi, bukan donasi.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Alert uji gagal dikirim.");
+    } finally {
+      setTestBusy(null);
+    }
+  }
+
   return (
     <>
       {error && <p className="auth-error" role="alert">{error}</p>}
@@ -96,7 +119,8 @@ export function FeatureOverlayLinks({ features }: Props) {
                 <small>{status?.active ? "Tautan aktif" : "Belum aktif"}</small>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
                   <button type="button" disabled={busy !== null} onClick={() => void manage(feature.slug, "create")}>{busy === feature.slug ? "Memproses…" : status?.active ? "Rotasi URL" : "Buat URL"}</button>
-                  {status?.active && <button type="button" disabled={busy !== null} onClick={() => void manage(feature.slug, "revoke")}>Cabut</button>}
+                  {status?.active && <button type="button" disabled={busy !== null || testBusy !== null} onClick={() => void sendTest(feature.slug)}>{testBusy === feature.slug ? "Mengirim…" : "Tes alert"}</button>}
+                  {status?.active && <button type="button" disabled={busy !== null || testBusy !== null} onClick={() => void manage(feature.slug, "revoke")}>Cabut</button>}
                 </div>
               </div>
             </article>
