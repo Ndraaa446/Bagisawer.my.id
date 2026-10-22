@@ -57,7 +57,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <button className="btn btn-primary auth-submit" type="submit" disabled={busy}>{busy ? "Memproses…" : isRegister ? "Buat akun" : "Masuk"} <span aria-hidden="true">→</span></button>
       </form>
       {!isRegister && <p className="auth-switch"><Link href="/forgot-password">Lupa kata sandi?</Link></p>}
-      {!isRegister && <p className="auth-switch"><Link href="/forgot-password">Lupa kata sandi?</Link></p>}
       <p className="auth-switch">{isRegister ? "Sudah punya akun?" : "Belum punya akun?"} <Link href={isRegister ? "/login" : "/register"}>{isRegister ? "Masuk" : "Daftar sekarang"}</Link></p>
       <p className="auth-note">Autentikasi menggunakan Supabase. Pastikan konfigurasi Supabase dan verifikasi email sudah disiapkan.</p>
     </section>
