@@ -61,7 +61,7 @@ export default function HomePage() {
 
       <section className="wrap" id="kreator"><div className="cta"><div className="section-kicker">Langkah berikutnya dimulai di sini</div><h2>Siap tumbuh bersama komunitasmu?</h2><p>Buat identitas kreatormu di Bagisawer dan mulai siapkan ruang dukunganmu.</p><Link className="btn btn-primary" href="/register">Mulai bangun halamanmu <span aria-hidden="true">→</span></Link></div></section>
 
-      <footer className="footer"><div className="wrap footer-inner"><Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link><div>© {new Date().getFullYear()} Bagisawer. Dibuat untuk kreator dan komunitas.</div><nav className="footer-links" aria-label="Tautan footer"><Link href="/features">Fitur</Link><Link href="/docs">Dokumentasi</Link><Link href="/privacy">Privasi</Link><Link href="/terms">Ketentuan</Link><Link href="/support">Bantuan</Link></nav></div></footer>
+      <footer className="footer"><div className="wrap footer-inner"><Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link><div>© {new Date().getFullYear()} Bagisawer. Dibuat untuk kreator dan komunitas.</div><nav className="footer-links" aria-label="Tautan footer"><Link href="/explore">Jelajahi kreator</Link><Link href="/features">Fitur</Link><Link href="/docs">Dokumentasi</Link><Link href="/faq">FAQ</Link><Link href="/contact">Kontak</Link><Link href="/fees">Biaya</Link><Link href="/refund">Refund</Link><Link href="/status">Status</Link><Link href="/privacy">Privasi</Link><Link href="/terms">Ketentuan</Link><Link href="/support">Bantuan</Link></nav></div></footer>
     </main>
   );
 }
