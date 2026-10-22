@@ -133,7 +133,23 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNotice("Pratinjau pengaturan tersimpan hanya di sesi halaman ini. Penyimpanan ke database dan pemrosesan event belum diaktifkan untuk modul ini.");
+    for (const field of fields) {
+      const value = values[field.key];
+      if (field.type === "number") {
+        const numericValue = typeof value === "number" ? value : Number(value);
+        if (value === "" || !Number.isFinite(numericValue) ||
+          (field.min !== undefined && numericValue < field.min) ||
+          (field.max !== undefined && numericValue > field.max)) {
+          setNotice(`${field.label}: masukkan angka yang valid${field.min !== undefined ? ` (minimum ${field.min})` : ""}${field.max !== undefined ? ` (maksimum ${field.max})` : ""}.`);
+          return;
+        }
+      }
+      if ((field.type === "text" || field.type === "textarea") && typeof value === "string" && value.length > 2000) {
+        setNotice(`${field.label}: teks terlalu panjang (maksimum 2.000 karakter).`);
+        return;
+      }
+    }
+    setNotice("Validasi pratinjau berhasil. Pengaturan ini hanya berada di sesi halaman ini; database dan pemrosesan event belum diaktifkan untuk modul ini.");
   }
 
   return (
