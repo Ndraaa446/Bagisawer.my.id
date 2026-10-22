@@ -129,7 +129,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
             <p className="preview-username">@{username.trim().toLowerCase() || "username"}</p>
             <p className="preview-bio">{bio.trim() || "Bio kreator akan tampil di sini."}</p>
             <span className={isPublic ? "profile-status status-public" : "profile-status"}>{isPublic ? "Halaman publik" : "Halaman privat"}</span>
-            {isPublic && <Link className="btn btn-ghost preview-link" href={`/${profile.username === username.trim().toLowerCase() ? profile.username : username.trim().toLowerCase()}`} target="_blank">Lihat halaman <span aria-hidden="true">↗</span></Link>}
+            {isPublic && <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}><Link className="btn btn-ghost preview-link" href={`/${profile.username === username.trim().toLowerCase() ? profile.username : username.trim().toLowerCase()}`} target="_blank">Lihat halaman <span aria-hidden="true">↗</span></Link><Link className="btn btn-primary preview-link" href={`/${profile.username === username.trim().toLowerCase() ? profile.username : username.trim().toLowerCase()}/dukung`} target="_blank">Pratinjau dukungan ↗</Link></div>}
           </section>
           <section className="feature-card next-steps">
             <div className="section-kicker">TAHAP BERIKUTNYA</div>
