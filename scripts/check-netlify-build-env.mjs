@@ -1,4 +1,8 @@
-const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+const required = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "NEXT_PUBLIC_APP_URL"
+];
 const missing = required.filter((key) => !process.env[key]?.trim());
 
 if (missing.length > 0) {
@@ -6,4 +10,4 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log("Netlify build environment preflight passed (required public Supabase variables are present).");
+console.log("Netlify build environment preflight passed (required public variables are present).");
