@@ -12,10 +12,12 @@
 - Sandbox payment processing uses a unique provider-event ID and payload comparison for idempotency. The database function creates balanced ledger entries and queues one clearly labeled sandbox alert on first success.
 - Overlay URLs are generated from the incoming request origin, so preview links stay on the preview host instead of using the configured primary app URL. The token-creation endpoint now follows the same rule.
 - Overlay API responses are non-cacheable; database read errors now fail closed rather than silently falling back to enabled alerts.
+- Creator overlay manager now has a manual status refresh control, in addition to automatic status loading and per-feature create/rotate/revoke/test actions.
 
 ## Verification evidence
 
 - GitHub Actions Quality checks run #46 (`39806791737`) passed lint, typecheck, and production build for commit `6e66654ab6ebfca5ec94b76be8b7d3b569960bc3`, including the overlay URL and account-flow hardening.
+- For latest commit `83345c2b66c180b5f578c3cf0a22c96866891f8e`, GitHub combined status currently reports no status checks and the workflow-run lookup returned no runs. This is **not** evidence that lint/typecheck/build passed. Netlify's latest visible comment is still processing commit `7381c87db7a97403822fe11876776dd5f18e5343`; a completed preview build for `83345c2` has not been confirmed.
 - Netlify Deploy Preview status for commit `149a88df6f0c30ce8c8cde63927adeea2e1fb505` was **ready**. Netlify bot posted https://deploy-preview-1--bagisawe.netlify.app and deploy log https://app.netlify.com/projects/bagisawe/deploys/6ada2d8fb4c03c63cc488cd8. Commits after `149a88d` contain further auth-flow fixes and still need a preview build before end-to-end testing.
 - The preview has SSO team-login protection. Direct browser inspection from the available checker was blocked, so interactive UI and OBS behavior are **not yet verified**.
 - Supabase migration `atomic_test_alert_rate_limit` was applied to project `gzfeyyflrnrqrnbvgsow`.
