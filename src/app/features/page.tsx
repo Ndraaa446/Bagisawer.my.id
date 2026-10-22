@@ -23,7 +23,7 @@ const groups = [
   ]}
 ];
 
-const paymentMethods = ["QRIS", "Virtual Account", "Transfer bank", "GoPay", "DANA", "OVO", "ShopeePay", "LinkAja", "Kartu debit/kredit", "Gerai retail"];
+const paymentMethods = ["QRIS", "Virtual Account", "Transfer bank", "Mobile/online banking", "GoPay", "DANA", "OVO", "ShopeePay", "LinkAja", "Kartu debit/kredit", "Gerai retail"];
 
 export default function FeaturesPage() {
   return (
