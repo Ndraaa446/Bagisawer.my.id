@@ -118,10 +118,10 @@ export function OverlayClient({ token }: { token: string }) {
       <style>{`
         .overlay-feature-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.5px;color:#d9ccff;margin-bottom:7px}
         .overlay-feature-note{font-size:10px;color:#c4b5fd;line-height:1.5;margin-top:7px}
-        .overlay-running-text{max-width:100%;padding:14px 24px;border:1px solid #a78bfa70;border-radius:12px;background:#120e1de8;color:#fff;box-shadow:0 10px 35px #0006;overflow:hidden;white-space:nowrap}
-        .overlay-running-text strong{color:#d9ccff;margin-right:12px}
-        .overlay-module-card{display:flex;gap:16px;align-items:center;max-width:700px;padding:20px 24px;border:1px solid #a78bfa70;border-radius:16px;background:linear-gradient(120deg,#211637f2,#100e17f2);box-shadow:0 16px 45px #0007;color:white}
-        .overlay-module-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#a78bfa24;color:#e9d5ff;font-size:23px;flex-shrink:0}
+        .overlay-running-text{max-width:100%;padding:14px 24px;border:1px solid #d9c8b7;border-radius:12px;background:#fffdf9;color:#302319;box-shadow:none;backdrop-filter:none;overflow:hidden;white-space:nowrap}
+        .overlay-running-text strong{color:#754426;margin-right:12px}
+        .overlay-module-card{display:flex;gap:16px;align-items:center;max-width:700px;padding:20px 24px;border:1px solid #d9c8b7;border-radius:12px;background:#fffdf9;box-shadow:none;backdrop-filter:none;color:#302319}
+        .overlay-module-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;background:#f0e3d7;color:#754426;font-size:23px;flex-shrink:0}
         .overlay-module-copy strong{font-size:19px;display:block}.overlay-module-copy p{font-size:13px;color:#ddd6eb;line-height:1.6;margin:5px 0}
         .overlay-module-copy b{font-size:15px;color:#c4b5fd}
       `}</style>
