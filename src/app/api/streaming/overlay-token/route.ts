@@ -54,8 +54,14 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: "Token overlay gagal dibuat. Coba lagi." }, { status: 500 });
 
-  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-  const origin = configuredOrigin || new URL(request.url).origin;
+  // Use the host that served this request so Deploy Previews generate usable preview URLs.
+  // NEXT_PUBLIC_APP_URL is a fallback only if parsing the request origin ever fails.
+  let origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "";
+  try {
+    origin = new URL(request.url).origin;
+  } catch {
+    // Keep the configured canonical origin as a defensive fallback.
+  }
   return NextResponse.json({
     url: `${origin}/overlay/${token}`,
     warning: "URL ini adalah rahasia. Salin dan simpan sekarang; token mentah tidak disimpan dan tidak dapat ditampilkan ulang."
