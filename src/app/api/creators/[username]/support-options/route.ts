@@ -37,9 +37,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ use
     .select("user_id, username").eq("username", username.toLowerCase()).eq("is_public", true).maybeSingle();
   if (creatorError) return json({ error: "Pilihan dukungan belum dapat dimuat." }, 503);
   if (!creator) return json({ error: "Kreator tidak ditemukan." }, 404);
-  const { data, error } = await admin.from("creator_feature_settings").select("feature_key, enabled").eq("user_id", creator.user_id);
+  const { data, error } = await admin.from("creator_feature_settings").select("feature_key, enabled, minimum_amount").eq("user_id", creator.user_id);
   if (error) return json({ error: "Pilihan dukungan belum dapat dimuat." }, 503);
   const enabled = new Set((data ?? []).filter((row) => row.enabled).map((row) => row.feature_key));
   enabled.add("saweran");
-  return json({ features: FEATURE_KEYS.filter((key) => enabled.has(key)).map((key) => ({ key, ...FEATURE_LABELS[key] })) });
+  return json({ features: FEATURE_KEYS.filter((key) => enabled.has(key)).map((key) => { const row = (data ?? []).find((item) => item.feature_key === key); return { key, ...FEATURE_LABELS[key], minimumAmount: row?.minimum_amount ?? 1000 }; }) });
 }
