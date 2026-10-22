@@ -37,7 +37,6 @@ export async function POST() {
     .from("alert_events")
     .select("id")
     .eq("user_id", user.id)
-    .eq("status", "pending")
     .gte("created_at", recentCutoff)
     .limit(1);
 
