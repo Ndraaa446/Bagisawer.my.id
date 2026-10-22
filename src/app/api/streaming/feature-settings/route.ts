@@ -1,0 +1,50 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export const dynamic = "force-dynamic";
+const FEATURE_KEYS = [
+  "saweran", "anonim", "pesan", "target", "mediashare", "voicenote", "lagu", "qris",
+  "leaderboard", "subathon", "running-text", "soundboard", "polling", "vip-queue",
+  "bagpao", "gachaton", "bidcoin"
+] as const;
+type FeatureKey = typeof FEATURE_KEYS[number];
+function json(body: unknown, status = 200) {
+  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0" } });
+}
+function isFeatureKey(value: unknown): value is FeatureKey {
+  return typeof value === "string" && FEATURE_KEYS.includes(value as FeatureKey);
+}
+export async function GET() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return json({ error: "Sesi masuk diperlukan." }, 401);
+  const admin = createAdminClient();
+  if (!admin) return json({ error: "Pengaturan fitur belum dikonfigurasi di server." }, 503);
+  const { data, error: readError } = await admin.from("creator_feature_settings")
+    .select("feature_key, enabled").eq("user_id", user.id);
+  if (readError) return json({ error: "Pengaturan aktivasi fitur gagal dimuat." }, 503);
+  const enabled = new Set((data ?? []).filter((row) => row.enabled).map((row) => row.feature_key));
+  enabled.add("saweran");
+  return json({ features: FEATURE_KEYS.map((featureKey) => ({ featureKey, enabled: enabled.has(featureKey) })) });
+}
+export async function PUT(request: Request) {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return json({ error: "Sesi masuk diperlukan." }, 401);
+  const admin = createAdminClient();
+  if (!admin) return json({ error: "Pengaturan fitur belum dikonfigurasi di server." }, 503);
+  let body: { featureKey?: unknown; enabled?: unknown };
+  try { body = await request.json(); } catch { return json({ error: "JSON permintaan tidak valid." }, 400); }
+  if (!isFeatureKey(body.featureKey) || typeof body.enabled !== "boolean") {
+    return json({ error: "Jenis fitur atau status aktivasi tidak valid." }, 400);
+  }
+  if (body.featureKey === "saweran" && !body.enabled) {
+    return json({ error: "Fitur saweran utama tidak dapat dinonaktifkan dari menu ini." }, 400);
+  }
+  const { error: writeError } = await admin.from("creator_feature_settings").upsert({
+    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, updated_at: new Date().toISOString()
+  }, { onConflict: "user_id,feature_key" });
+  if (writeError) return json({ error: "Status aktivasi fitur gagal disimpan." }, 500);
+  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled });
+}
