@@ -31,16 +31,14 @@ function unavailable() {
 }
 
 function appOrigin(request: Request) {
-  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (configured) {
-    try {
-      const url = new URL(configured);
-      if (url.protocol === "https:" || url.protocol === "http:") return url.origin;
-    } catch {
-      // Fall back to the request origin only when the configured value is invalid.
-    }
+  // Use the origin that served this request so Netlify deploy previews keep
+  // their own overlay URLs instead of accidentally pointing at production.
+  // Never construct an overlay URL from a user-supplied request body/header.
+  const url = new URL(request.url);
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    throw new Error("Unsupported request origin");
   }
-  return new URL(request.url).origin;
+  return url.origin;
 }
 
 export async function GET() {
