@@ -18,6 +18,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
   const [username, setUsername] = useState(initialProfile.username);
   const [displayName, setDisplayName] = useState(initialProfile.display_name);
   const [bio, setBio] = useState(initialProfile.bio);
+  const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url ?? "");
   const [isPublic, setIsPublic] = useState(initialProfile.is_public);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -44,6 +45,11 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
       setBusy(false);
       return;
     }
+    if (avatarUrl.trim() && (!/^https:\/\//i.test(avatarUrl.trim()) || avatarUrl.trim().length > 2048)) {
+      setError("URL avatar harus berupa alamat HTTPS yang valid.");
+      setBusy(false);
+      return;
+    }
     if (normalizedBio.length > 280) {
       setError("Bio maksimal 280 karakter.");
       setBusy(false);
@@ -58,6 +64,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
           username: normalizedUsername,
           display_name: normalizedName,
           bio: normalizedBio,
+          avatar_url: avatarUrl.trim() || null,
           is_public: isPublic
         })
         .eq("user_id", profile.user_id)
@@ -74,6 +81,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
       setUsername(data.username);
       setDisplayName(data.display_name);
       setBio(data.bio);
+      setAvatarUrl(data.avatar_url ?? "");
       setIsPublic(data.is_public);
       setMessage("Profil berhasil disimpan.");
     } catch (e) {
@@ -117,6 +125,10 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
             <label>Nama tampilan
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={60} required placeholder="Nama kreator kamu" />
             </label>
+            <label>URL foto profil (HTTPS)
+              <input type="url" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} maxLength={2048} placeholder="https://.../foto-profil.jpg" />
+              <span className="field-hint">Gunakan URL gambar publik HTTPS.</span>
+            </label>
             <label>Bio
               <textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={280} rows={4} placeholder="Ceritakan sedikit tentang karya dan komunitasmu." />
               <span className="field-hint">{bio.length}/280 karakter</span>
@@ -134,7 +146,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
         <aside className="dashboard-side">
           <section className="feature-card profile-preview">
             <div className="section-kicker">PRATINJAU PROFIL</div>
-            <div className="profile-avatar">{(displayName.trim()[0] || "K").toUpperCase()}</div>
+            <div className="profile-avatar">{avatarUrl.trim() ? <img src={avatarUrl.trim()} alt="" referrerPolicy="no-referrer" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"inherit"}} /> : (displayName.trim()[0] || "K").toUpperCase()}</div>
             <h3>{displayName.trim() || "Nama kreator"}</h3>
             <p className="preview-username">@{username.trim().toLowerCase() || "username"}</p>
             <p className="preview-bio">{bio.trim() || "Bio kreator akan tampil di sini."}</p>

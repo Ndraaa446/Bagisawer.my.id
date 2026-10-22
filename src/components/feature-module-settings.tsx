@@ -139,6 +139,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
   const [featureEnabled, setFeatureEnabled] = useState(featureKey === "saweran");
   const [overlayEnabled, setOverlayEnabled] = useState(false);
   const [activationLoading, setActivationLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const storageKey = "bagisawer:feature-settings:" + featureKey;
 
   useEffect(() => {
@@ -151,15 +152,10 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
         setFeatureEnabled(Boolean(item?.enabled));
         setOverlayEnabled(Boolean(item?.overlayEnabled));
         if (item && Number.isSafeInteger(item.minimumAmount)) setValues((previous) => ({ ...previous, minimum: item.minimumAmount }));
+        if (item?.configuration && typeof item.configuration === "object" && !Array.isArray(item.configuration)) setValues((previous) => ({ ...previous, ...(item.configuration as Record<string, string | number | boolean>) }));
       }
     }).catch(() => { if (!cancelled) setNotice("Status aktivasi server belum dapat dimuat; periksa koneksi dan coba simpan kembali."); })
       .finally(() => { if (!cancelled) setActivationLoading(false); });
-    try {
-      const stored = window.localStorage.getItem(storageKey);
-      if (!stored) return;
-      const parsed: unknown = JSON.parse(stored);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) setValues((previous) => ({ ...previous, ...(parsed as Record<string, string | number | boolean>) }));
-    } catch { setNotice("Pengaturan lokal tidak dapat dibaca. Nilai awal tetap tersedia."); }
     return () => { cancelled = true; };
   }, [storageKey, featureKey]);
 
@@ -209,17 +205,18 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
       }
     }
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify(values));
-      const response = await fetch("/api/streaming/feature-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey, enabled: featureEnabled, overlayEnabled, minimumAmount: Number(values.minimum ?? 1000) }), cache: "no-store" });
+      setSaving(true);
+      const response = await fetch("/api/streaming/feature-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey, enabled: featureEnabled, overlayEnabled, minimumAmount: Number(values.minimum ?? 1000), configuration: values }), cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Status aktivasi fitur gagal disimpan.");
+      try { window.localStorage.setItem(storageKey, JSON.stringify(values)); } catch { /* Server remains the source of truth. */ }
       setNotice(`${featureEnabled ? "Pilihan /dukung aktif" : "Pilihan /dukung nonaktif"}; overlay ${overlayEnabled ? "aktif" : "nonaktif"}; minimal donasi ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(values.minimum ?? 1000))} tersimpan di server.`);
-    } catch (error) { setNotice(error instanceof Error ? error.message : "Pengaturan gagal disimpan."); }
+    } catch (error) { setNotice(error instanceof Error ? error.message : "Pengaturan gagal disimpan."); } finally { setSaving(false); }
   }
 
   return (
     <form className="tool-card" onSubmit={submit} style={{display:"grid",gap:15}}>
-      <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Status aktivasi disimpan ke server akun kreator dan mengatur apakah pilihan ini muncul di halaman dukungan publik. Minimal donasi dan status aktif/nonaktif disimpan di server akun kreator. Pengaturan lain masih disimpan lokal di browser.</p></div>
+      <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Status aktivasi disimpan ke server akun kreator dan mengatur apakah pilihan ini muncul di halaman dukungan publik. Minimal donasi dan status aktif/nonaktif disimpan di server akun kreator. Seluruh konfigurasi modul disimpan ke server akun kreator dan disinkronkan antarperangkat.</p></div>
       <label style={{display:"flex",alignItems:"center",gap:10,padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="checkbox" checked={featureEnabled} disabled={featureKey === "saweran" || activationLoading} onChange={(event) => setFeatureEnabled(event.target.checked)} /><span><strong>{featureKey === "saweran" ? "Saweran utama selalu aktif" : "Tampilkan fitur ini di halaman dukungan"}</strong><small style={{display:"block",fontWeight:400,color:"var(--muted)",marginTop:4}}>{featureKey === "saweran" ? "Fitur dasar untuk menerima dukungan." : "Saat dinonaktifkan, pendukung tidak akan melihat pilihan ini."}</small></span></label>
       <label style={{display:"flex",alignItems:"center",gap:10,padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="checkbox" checked={overlayEnabled} onChange={(event) => setOverlayEnabled(event.target.checked)} /><span><strong>Aktifkan overlay khusus fitur ini</strong><small style={{display:"block",fontWeight:400,color:"var(--muted)",marginTop:4}}>Terpisah dari pilihan di /dukung. Jika nonaktif, overlay ini tidak akan menerima event meskipun URL masih aktif.</small></span></label>
       {fields.map((field) => (
@@ -237,7 +234,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
           {field.help && <small style={{fontSize:10,color:"var(--muted)",lineHeight:1.6}}>{field.help}</small>}
         </label>
       ))}
-      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button className="btn btn-primary" type="submit" disabled={activationLoading}>Simpan pengaturan</button><button className="btn btn-ghost" type="button" onClick={() => { window.localStorage.removeItem(storageKey); setValues(Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""]))); setNotice("Pengaturan lokal dihapus dan nilai awal dipulihkan."); }}>Pulihkan nilai awal</button></div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button className="btn btn-primary" type="submit" disabled={activationLoading || saving}>{saving ? "Menyimpan…" : "Simpan pengaturan"}</button><button className="btn btn-ghost" type="button" onClick={() => { window.localStorage.removeItem(storageKey); setValues(Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""]))); setNotice("Pengaturan lokal dihapus dan nilai awal dipulihkan."); }}>Pulihkan nilai awal</button></div>
       {notice && <p className="auth-message" role="status">{notice}</p>}
     </form>
   );
