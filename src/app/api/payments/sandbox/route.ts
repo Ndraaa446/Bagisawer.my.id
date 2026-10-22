@@ -29,6 +29,14 @@ export async function POST(request: Request) {
     }
     if (!donorName || donorName.length > 80 || message.length > 240) return jsonError("Nama atau pesan terlalu panjang.", 400);
 
+    const cutoff = new Date(Date.now() - 10 * 60_000).toISOString();
+    const { count, error: rateError } = await admin.from("sandbox_donations")
+      .select("id", { count: "exact", head: true })
+      .eq("creator_user_id", user.id)
+      .gte("created_at", cutoff);
+    if (rateError) return jsonError("Batas permintaan sandbox belum dapat diperiksa.", 500);
+    if ((count ?? 0) >= 5) return jsonError("Batas uji tercapai. Coba lagi dalam beberapa menit.", 429);
+
     const reference = `BSW-SBX-${randomBytes(8).toString("hex").toUpperCase()}`;
     const { data, error } = await admin.from("sandbox_donations").insert({
       creator_user_id: user.id,
