@@ -18,12 +18,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true); setError(""); setMessage("");
+    const normalizedEmail = email.trim().toLowerCase();
     try {
       const supabase = createClient();
       if (isRegister) {
         const { error: authError, data } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { display_name: username.trim() || email.split("@")[0] }, emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` }
+          email: normalizedEmail, password,
+          options: { data: { display_name: username.trim() || normalizedEmail.split("@")[0] }, emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` }
         });
         if (authError) throw authError;
         if (data.session) {
@@ -33,7 +34,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           setMessage("Pendaftaran diterima. Periksa email untuk verifikasi sebelum masuk.");
         }
       } else {
-        const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        const { error: authError } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (authError) throw authError;
         router.push("/dashboard"); router.refresh();
       }
