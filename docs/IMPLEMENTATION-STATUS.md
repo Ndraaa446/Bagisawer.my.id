@@ -10,7 +10,7 @@
 - Overlay token rotation/revocation endpoints are present. Token resolution rejects revoked tokens, and the UI asks for confirmation before rotating or revoking.
 - Test-alert cooldown runs inside a database function with a per-creator transaction advisory lock. It checks for an active overlay token and alert settings before enqueueing.
 - Sandbox payment processing uses a unique provider-event ID and payload comparison for idempotency. The database function creates balanced ledger entries and queues one clearly labeled sandbox alert on first success.
-- Overlay URLs are generated from the incoming request origin, so preview links stay on the preview host instead of using the configured primary app URL.
+- Overlay URLs are generated from the incoming request origin, so preview links stay on the preview host instead of using the configured primary app URL. The token-creation endpoint now follows the same rule.
 - Overlay API responses are non-cacheable; database read errors now fail closed rather than silently falling back to enabled alerts.
 
 ## Verification evidence
@@ -24,6 +24,13 @@
 - Guard test for a user without an active overlay token returned `{ ok: false, reason: "token_inactive" }`; no alert was inserted.
 - Duplicate replay returned `duplicate: true`; ledger entry count stayed at 2 and sandbox alert count stayed at 1.
 - Supabase Security Advisor still warns that leaked-password protection is disabled. Performance Advisor reports two sandbox indexes as unused so far; do not drop them based on this small test dataset.
+
+## Point 5 — account and access work started
+
+- Reviewed session checks on dashboard routes, server-side Supabase client cookie handling, and RLS ownership policies for creator profiles and stream settings.
+- Confirmed that overlay token rows and sandbox payment/ledger tables are not directly accessible to browser roles; service-role RPCs remain server-only.
+- Removed a duplicate password-recovery link from the login form.
+- Login, registration, and password-recovery flows still require end-to-end verification with a dedicated test account; no such test has been run in this batch.
 
 ## Next work in point 4
 
