@@ -24,10 +24,20 @@ export function FeatureOverlayLinks({ features }: Props) {
         next[item.featureKey] = { active: Boolean(item.active), createdAt: item.createdAt ?? null };
       }
       setStatuses(next);
+      setUrls((previous) => {
+        const updated = { ...previous };
+        for (const feature of features) {
+          if (!next[feature.slug]?.active) {
+            delete updated[feature.slug];
+            try { window.localStorage.removeItem(`bagisawer:overlay-url:${feature.slug}`); } catch { /* Ignore unavailable storage. */ }
+          }
+        }
+        return updated;
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Status overlay belum dapat dimuat.");
     }
-  }, []);
+  }, [features]);
 
   useEffect(() => {
     void refresh();
