@@ -46,11 +46,13 @@ async function resolveToken(token: string) {
       admin,
       userId: featureToken.user_id as string,
       featureKey,
-      eventTypes: featureEventTypes[featureKey] ?? [featureKey]
+      eventTypes: featureEventTypes[featureKey] ?? [featureKey],
+      excludeEventTypes: null as string[] | null
     };
   }
 
-  // Keep previously-issued general OBS tokens working during the transition.
+  // Keep previously-issued general OBS tokens working, but do not let them
+  // consume events already assigned to active per-feature overlays.
   const { data, error } = await admin
     .from("overlay_tokens")
     .select("user_id")
@@ -59,7 +61,17 @@ async function resolveToken(token: string) {
     .maybeSingle();
 
   if (error || !data) return null;
-  return { admin, userId: data.user_id as string, featureKey: "general", eventTypes: null as string[] | null };
+  const userId = data.user_id as string;
+  const { data: activeFeatureTokens, error: activeFeatureError } = await admin
+    .from("creator_feature_overlay_tokens")
+    .select("feature_key")
+    .eq("user_id", userId)
+    .is("revoked_at", null);
+  if (activeFeatureError) return null;
+  const excludeEventTypes = Array.from(new Set((activeFeatureTokens ?? []).flatMap((row) =>
+    featureEventTypes[row.feature_key as string] ?? [row.feature_key as string]
+  )));
+  return { admin, userId, featureKey: "general", eventTypes: null as string[] | null, excludeEventTypes };
 }
 
 function noStoreJson(body: unknown, status = 200) {
@@ -76,6 +88,10 @@ function notFound() {
   return noStoreJson({ error: "Overlay tidak ditemukan atau token sudah dicabut." }, 404);
 }
 
+function postgrestInList(values: string[]) {
+  return "(" + values.map((value) => '"' + value.replace(/"/g, '\\"') + '"').join(",") + ")";
+}
+
 export async function GET(_request: Request, context: Context) {
   const { token } = await context.params;
   const resolved = await resolveToken(token);
@@ -84,7 +100,7 @@ export async function GET(_request: Request, context: Context) {
     return notFound();
   }
 
-  const { admin, userId, featureKey, eventTypes } = resolved;
+  const { admin, userId, featureKey, eventTypes, excludeEventTypes } = resolved;
   const { data: settings, error: settingsError } = await admin
     .from("creator_stream_settings")
     .select("alert_enabled, minimum_amount, duration_seconds, theme, sound_enabled")
@@ -104,6 +120,7 @@ export async function GET(_request: Request, context: Context) {
       .order("created_at", { ascending: true })
       .limit(1);
     if (eventTypes) eventQuery = eventQuery.in("event_type", eventTypes);
+    if (excludeEventTypes?.length) eventQuery = eventQuery.not("event_type", "in", postgrestInList(excludeEventTypes));
     const { data, error: eventError } = await eventQuery.maybeSingle();
 
     if (eventError) return noStoreJson({ error: "Antrean alert belum dapat dibaca." }, 503);
@@ -143,6 +160,9 @@ export async function POST(request: Request, context: Context) {
     .eq("user_id", resolved.userId)
     .eq("status", "pending");
   if (resolved.eventTypes) acknowledgeQuery = acknowledgeQuery.in("event_type", resolved.eventTypes);
+  if (resolved.excludeEventTypes?.length) {
+    acknowledgeQuery = acknowledgeQuery.not("event_type", "in", postgrestInList(resolved.excludeEventTypes));
+  }
   const { error, count } = await acknowledgeQuery;
 
   if (error) return noStoreJson({ error: "Event belum dapat ditandai selesai." }, 500);
