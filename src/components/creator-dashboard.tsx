@@ -22,6 +22,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,12 +87,13 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
     <main className="wrap dashboard-page">
       <header className="nav dashboard-nav">
         <Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
-        <nav className="creator-nav-menu" aria-label="Menu kreator">
-          <Link href="/dashboard" className="creator-nav-link creator-nav-active">Ringkasan</Link>
-          <Link href="/dashboard/fitur/donasi" className="creator-nav-link">Donasi</Link>
-          <Link href="/dashboard/fitur/pembayaran" className="creator-nav-link">Pembayaran</Link>
-          <Link href="/dashboard/streaming" className="creator-nav-link">Livestream & OBS</Link>
-          <Link href="/dashboard/fitur/overlay" className="creator-nav-link">Overlay</Link>
+        <button type="button" className="creator-menu-toggle" aria-expanded={menuOpen} aria-controls="creator-primary-menu" onClick={() => setMenuOpen((open) => !open)}><span aria-hidden="true">{menuOpen ? "×" : "☰"}</span><span>{menuOpen ? "Tutup menu" : "Menu kreator"}</span></button>
+        <nav id="creator-primary-menu" className={`creator-nav-menu${menuOpen ? " creator-nav-menu-open" : ""}`} aria-label="Menu kreator">
+          <Link onClick={() => setMenuOpen(false)} href="/dashboard" className="creator-nav-link creator-nav-active">Ringkasan</Link>
+          <Link onClick={() => setMenuOpen(false)} href="/dashboard/fitur/donasi" className="creator-nav-link">Donasi</Link>
+          <Link onClick={() => setMenuOpen(false)} href="/dashboard/fitur/pembayaran" className="creator-nav-link">Pembayaran</Link>
+          <Link onClick={() => setMenuOpen(false)} href="/dashboard/streaming" className="creator-nav-link">Livestream & OBS</Link>
+          <Link onClick={() => setMenuOpen(false)} href="/dashboard/fitur/overlay" className="creator-nav-link">Overlay</Link>
         </nav>
         <div className="dashboard-user"><span>{email}</span><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
       </header>
@@ -110,7 +112,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
           <p className="dashboard-muted">Username menjadi alamat halamanmu. Halaman tetap privat sampai kamu mengaktifkan publikasi.</p>
           <form className="profile-form" onSubmit={saveProfile}>
             <label>Username
-              <div className="username-field"><span>bagisawer.vercel.app/</span><input value={username} onChange={(e) => setUsername(e.target.value)} minLength={3} maxLength={30} pattern="[a-zA-Z0-9_]{3,30}" autoComplete="username" required /></div>
+              <div className="username-field"><span>bagisawer.my.id/</span><input value={username} onChange={(e) => setUsername(e.target.value)} minLength={3} maxLength={30} pattern="[a-zA-Z0-9_]{3,30}" autoComplete="username" required /></div>
             </label>
             <label>Nama tampilan
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={60} required placeholder="Nama kreator kamu" />
