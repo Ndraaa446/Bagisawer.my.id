@@ -223,3 +223,7 @@ h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(29px,4vw,43px);letter-
 @keyframes overlay-alert-in{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:520px){.overlay-root{padding:14px}.overlay-alert{padding:18px;gap:12px;border-radius:16px}.overlay-heart{width:44px;height:44px;flex-basis:44px;font-size:27px;border-radius:13px}.overlay-copy p{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.overlay-alert{animation:none}}
+
+
+/* Payment sandbox */
+.sandbox-layout{align-items:start}.sandbox-status{display:inline-flex;margin:14px 0 10px;padding:6px 10px;border:1px solid #a78bfa50;border-radius:999px;color:#ddd0ff;font-size:10px;font-weight:800;letter-spacing:1px}.sandbox-reference{display:block;overflow-wrap:anywhere;padding:12px;border:1px solid #a78bfa35;border-radius:10px;background:#0e0c14;color:#e9d5ff;font-size:12px;margin:8px 0 14px}.sandbox-checks{padding-left:18px;color:var(--muted);font-size:12px;line-height:1.9}.sandbox-checks li{padding-left:4px;margin-bottom:6px}
