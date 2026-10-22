@@ -40,11 +40,11 @@ Updated: 2026-10-22
 - Supabase Auth Site URL and allowed redirect URL allowlist must include the production domain and `/auth/callback`; configuration and email delivery must be tested in Supabase Dashboard.
 - Email confirmation, password recovery and sign-in must be tested end to end with a real test account.
 - Username is generated automatically on signup; creator can customize it in the dashboard.
-- Payment provider, checkout, signed webhooks, immutable ledger, payouts, refunds and reconciliation are not implemented.
+- Provider-neutral sandbox payment flow now has server-generated references, pending/succeeded states, a service-role-only idempotent event processor, balanced append-only sandbox ledger entries, and clearly labeled test alerts. No live payment provider, signed external webhook, real-money ledger, payouts or reconciliation is configured.
 - Real donation-triggered alert delivery, WebSocket/realtime queue recovery, sound playback, store delivery, and complete admin/moderation dashboard are not active. The OBS test-alert flow requires a server-only `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` in Vercel; the project currently has no such variable configured, so token management/overlay API will return 503 until it is added.
 - Profile avatar upload is not enabled yet.
 - Privacy and terms are drafts, not final legal policies.
-- Payment and payout operations must remain disabled until a provider is selected and sandbox, webhook, reconciliation and security tests pass.
+- Payment and payout operations must remain disabled until a provider is selected and real provider sandbox, signature/replay tests, reconciliation and security tests pass. Sandbox API and OBS token management require a server-only Supabase service/secret key in Vercel.
 
 ## Next steps
 1. Confirm the latest middleware deployment reaches READY and test the production pages.
@@ -52,5 +52,5 @@ Updated: 2026-10-22
 3. Test registration, email confirmation, login, logout, password recovery and profile creation.
 4. Test RLS with anonymous, owner and other-user contexts.
 5. Add onboarding/profile polish and password-strength feedback.
-6. Select a payment provider only after requirements/fees are reviewed; implement sandbox and verified webhooks before any real transactions.
+6. Add the server-only Supabase secret in Vercel, then test overlay token create/rotate/revoke and the sandbox panel end-to-end. Select a payment provider only after requirements/fees are reviewed; implement signed webhooks and provider sandbox tests before any real transactions.
 7. Add the Supabase service/secret key as a server-only Vercel environment variable, deploy, then test token create/rotate/revoke and the OBS test-alert loop. Add realtime delivery/recovery and sound before marking streaming production-ready.
