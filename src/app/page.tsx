@@ -30,12 +30,14 @@ export default function HomePage() {
       </header>
 
       <section className="wrap hero">
+        <div className="hero-content">
         <div className="eyebrow"><span className="dot" /> RUANG DUKUNGAN UNTUK KREATOR INDONESIA</div>
         <h1>Karyamu berarti.<br/><span className="gradient-text">Dukungan mereka juga.</span></h1>
         <p className="hero-copy">Bangun koneksi yang lebih dekat dengan komunitasmu. Satu halaman untuk menerima dukungan, merayakan momen livestream, dan tumbuh bersama.</p>
         <div className="hero-actions"><Link href="/register" className="btn btn-primary">Buat halaman kreator <span aria-hidden="true">→</span></Link><a href="#fitur" className="btn btn-ghost">Jelajahi fitur <span aria-hidden="true">↓</span></a></div>
         <p className="trust">Gratis untuk mulai · Pengaturan transparan · Dibangun untuk komunitas</p>
 
+        </div>
         <div className="preview-shell" aria-label="Pratinjau antarmuka Bagisawer">
           <div className="preview"><div className="preview-top"><span className="window-dot"/><span className="window-dot"/><span className="window-dot"/><span style={{marginLeft:10}}>app.bagisawer.id / creator</span><span style={{marginLeft:"auto"}}>● Pratinjau UI</span></div>
             <div className="preview-body">
