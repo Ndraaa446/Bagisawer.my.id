@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -27,6 +27,27 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
   const [preview, setPreview] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [tokenStatus, setTokenStatus] = useState<"loading" | "active" | "inactive" | "unavailable">("loading");
+  const [tokenUrl, setTokenUrl] = useState("");
+  const [tokenBusy, setTokenBusy] = useState(false);
+  const [testBusy, setTestBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/streaming/overlay-token", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (cancelled) return;
+        if (!response.ok) {
+          setTokenStatus(response.status === 503 ? "unavailable" : "inactive");
+          if (data.error) setError(data.error);
+          return;
+        }
+        setTokenStatus(data.active ? "active" : "inactive");
+      })
+      .catch(() => { if (!cancelled) setTokenStatus("unavailable"); });
+    return () => { cancelled = true; };
+  }, []);
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,6 +96,64 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
     }
   }
 
+  async function manageToken(action: "rotate" | "revoke") {
+    if (tokenBusy) return;
+    if (action === "rotate" && tokenStatus === "active" && !window.confirm("Token lama akan langsung tidak berlaku dan URL OBS lama terputus. Lanjutkan rotasi?")) return;
+    if (action === "revoke" && !window.confirm("Cabut token sekarang? Overlay yang memakai URL ini akan berhenti menerima event.")) return;
+
+    setTokenBusy(true);
+    setMessage("");
+    setError("");
+    setTokenUrl("");
+    try {
+      const response = await fetch("/api/streaming/overlay-token", {
+        method: action === "rotate" ? "POST" : "DELETE",
+        cache: "no-store"
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Permintaan token gagal.");
+      if (action === "rotate") {
+        setTokenUrl(data.url);
+        setTokenStatus("active");
+        setMessage("URL overlay baru dibuat. Salin sekarang dan perbarui Browser Source di OBS.");
+      } else {
+        setTokenStatus("inactive");
+        setMessage("Token overlay sudah dicabut.");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Token overlay belum dapat diperbarui.");
+      if (action === "rotate") setTokenStatus("unavailable");
+    } finally {
+      setTokenBusy(false);
+    }
+  }
+
+  async function copyOverlayUrl() {
+    try {
+      await navigator.clipboard.writeText(tokenUrl);
+      setMessage("URL overlay disalin. Perlakukan seperti kata sandi.");
+    } catch {
+      setError("Browser menolak akses clipboard. Pilih dan salin URL secara manual.");
+    }
+  }
+
+  async function sendTestAlert() {
+    if (testBusy) return;
+    setTestBusy(true);
+    setMessage("");
+    setError("");
+    try {
+      const response = await fetch("/api/streaming/test-alert", { method: "POST", cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Alert uji gagal dikirim.");
+      setMessage("Alert uji masuk ke antrean. Pastikan OBS membuka URL overlay yang aktif.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Alert uji gagal dikirim.");
+    } finally {
+      setTestBusy(false);
+    }
+  }
+
   return (
     <main className="wrap dashboard-page">
       <header className="nav dashboard-nav">
@@ -85,7 +164,7 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
       <section className="dashboard-intro">
         <div className="section-kicker">LIVESTREAM & OBS</div>
         <h1 className="dashboard-title">Siapkan alert siaranmu.</h1>
-        <p className="dashboard-copy">Atur tampilan alert yang akan menjadi dasar overlay browser source. Pengaturan tersimpan di akun kreatormu.</p>
+        <p className="dashboard-copy">Atur tampilan alert, kelola URL Browser Source privat, dan kirim event uji tanpa membuat transaksi.</p>
       </section>
 
       <div className="streaming-layout">
@@ -95,11 +174,11 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
           <form className="profile-form" onSubmit={saveSettings}>
             <label className="publish-toggle">
               <input type="checkbox" checked={settings.alert_enabled} onChange={(e) => setSettings({ ...settings, alert_enabled: e.target.checked })} />
-              <span><strong>Aktifkan alert</strong><small>Kontrol ini mengatur kesiapan alert untuk overlay ketika integrasi event tersedia.</small></span>
+              <span><strong>Aktifkan alert</strong><small>Jika dimatikan, overlay tidak menampilkan event sampai alert diaktifkan kembali.</small></span>
             </label>
             <label>Nominal minimum (rupiah)
               <input type="number" min="0" max="100000000" step="1000" value={minimumAmount} onChange={(e) => setMinimumAmount(e.target.value)} required />
-              <span className="field-hint">Alert di bawah nominal ini nantinya dapat disaring.</span>
+              <span className="field-hint">Ambang ini disimpan untuk alur event; event uji selalu diberi label uji.</span>
             </label>
             <label>Durasi alert
               <select value={duration} onChange={(e) => setDuration(e.target.value)}>
@@ -113,13 +192,13 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
             </label>
             <label className="publish-toggle">
               <input type="checkbox" checked={settings.sound_enabled} onChange={(e) => setSettings({ ...settings, sound_enabled: e.target.checked })} />
-              <span><strong>Suara alert</strong><small>Preferensi suara disimpan; audio overlay nyata akan dihubungkan pada tahap berikutnya.</small></span>
+              <span><strong>Suara alert</strong><small>Preferensi tersimpan; audio akan ditambahkan terpisah setelah alur alert visual diuji.</small></span>
             </label>
             {error && <p className="auth-error" role="alert">{error}</p>}
             {message && <p className="auth-message" role="status">{message}</p>}
             <div className="streaming-actions">
               <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Menyimpan…" : "Simpan pengaturan"} <span aria-hidden="true">→</span></button>
-              <button className="btn btn-ghost" type="button" onClick={() => setPreview((value) => !value)}>{preview ? "Tutup pratinjau" : "Uji pratinjau"}</button>
+              <button className="btn btn-ghost" type="button" onClick={() => setPreview((value) => !value)}>{preview ? "Tutup pratinjau" : "Pratinjau lokal"}</button>
             </div>
           </form>
         </section>
@@ -128,25 +207,44 @@ export function StreamingSettings({ initialSettings, email }: { initialSettings:
           <section className={`feature-card alert-preview theme-${settings.theme}`}>
             <div className="section-kicker">PRATINJAU LOKAL</div>
             <div className="alert-stage">
-              {preview ? <div className="sample-alert"><div className="sample-alert-icon">♡</div><div><strong>Terima kasih, Pendukung!</strong><p>Semangat terus berkarya ✨</p><b>Rp25.000</b></div></div> : <div className="alert-placeholder"><span>♡</span><strong>Alert kamu tampil di sini</strong><small>Tekan “Uji pratinjau” untuk melihat contoh.</small></div>}
+              {preview ? <div className="sample-alert"><div className="sample-alert-icon">♡</div><div><strong>Terima kasih, Pendukung!</strong><p>Semangat terus berkarya ✨</p><b>Rp25.000</b></div></div> : <div className="alert-placeholder"><span>♡</span><strong>Alert kamu tampil di sini</strong><small>Tekan “Pratinjau lokal” untuk melihat contoh.</small></div>}
             </div>
             <div className="preview-meta"><span>Tema: {themeLabels[settings.theme]}</span><span>Durasi: {duration} detik</span></div>
-            <p className="dashboard-muted">Ini hanya simulasi visual lokal, bukan donasi nyata dan tidak mengirim event ke OBS.</p>
+            <p className="dashboard-muted">Pratinjau ini hanya simulasi visual, tidak membuat transaksi.</p>
+          </section>
+
+          <section className="feature-card overlay-token-panel">
+            <div className="section-kicker">URL OVERLAY OBS</div>
+            <h3>Browser Source privat</h3>
+            <div className="overlay-token-status">
+              <span className={`status-dot status-${tokenStatus}`} />
+              {tokenStatus === "loading" ? "Memeriksa status…" : tokenStatus === "active" ? "Token aktif" : tokenStatus === "inactive" ? "Belum ada token aktif" : "Layanan token belum siap"}
+            </div>
+            <p className="dashboard-muted">URL memuat token rahasia. Jangan bagikan di layar, chat publik, atau tangkapan layar. Token disimpan dalam bentuk hash dan URL mentah hanya ditampilkan saat dibuat.</p>
+            {tokenUrl && <div className="overlay-url-box"><code>{tokenUrl}</code><button className="btn btn-ghost" type="button" onClick={copyOverlayUrl}>Salin URL</button><p>{/* keep URL visible until copied or page is closed */}Simpan URL ini sebelum meninggalkan halaman. Token tidak dapat ditampilkan ulang.</p></div>}
+            <div className="streaming-actions">
+              <button className="btn btn-primary" type="button" disabled={tokenBusy || tokenStatus === "unavailable"} onClick={() => manageToken("rotate")}>{tokenBusy ? "Memproses…" : tokenStatus === "active" ? "Rotasi URL overlay" : "Buat URL overlay"}</button>
+              {tokenStatus === "active" && <button className="btn btn-ghost" type="button" disabled={tokenBusy} onClick={() => manageToken("revoke")}>Cabut token</button>}
+            </div>
+            {tokenStatus === "unavailable" && <p className="auth-error overlay-config-note">Server memerlukan secret Supabase khusus server. Jangan menaruh service-role/secret key di variabel NEXT_PUBLIC_.</p>}
+            <button className="btn btn-ghost overlay-test-button" type="button" disabled={testBusy || tokenStatus !== "active"} onClick={sendTestAlert}>{testBusy ? "Mengirim…" : "Kirim alert uji ke OBS"}</button>
+            <p className="dashboard-muted overlay-footnote">Event uji ditandai “UJI COBA · BUKAN DONASI” dan tidak menambah saldo.</p>
           </section>
 
           <section className="feature-card obs-setup">
             <div className="section-kicker">LANGKAH OBS</div>
-            <h3>Hubungkan setelah overlay siap</h3>
+            <h3>Hubungkan Browser Source</h3>
             <ol>
-              <li><span>01</span> Buka OBS Studio dan pilih sumber <strong>Browser</strong>.</li>
-              <li><span>02</span> Masukkan URL overlay privat dari dashboard saat token overlay tersedia.</li>
-              <li><span>03</span> Atur ukuran kanvas mengikuti resolusi siaranmu.</li>
+              <li><span>01</span> Buat URL overlay privat di panel ini.</li>
+              <li><span>02</span> Di OBS Studio, tambahkan sumber <strong>Browser</strong> dan tempel URL privat.</li>
+              <li><span>03</span> Atur ukuran sumber, misalnya 800 × 450, lalu simpan scene.</li>
+              <li><span>04</span> Tekan “Kirim alert uji ke OBS” untuk memeriksa event.</li>
             </ol>
-            <p className="dashboard-muted">URL overlay bertoken, rotasi token, dan event real-time belum aktif. Jangan menempelkan URL contoh ke OBS untuk siaran nyata.</p>
+            <p className="dashboard-muted">Jika token dicabut atau dirotasi, URL lama langsung berhenti bekerja. Buat URL baru dan perbarui sumber OBS.</p>
           </section>
         </aside>
       </div>
-      <footer className="dashboard-footer">Bagisawer · Pengaturan livestream · Pratinjau tidak memicu transaksi</footer>
+      <footer className="dashboard-footer">Bagisawer · Overlay OBS · Alert uji bukan donasi</footer>
     </main>
   );
 }
