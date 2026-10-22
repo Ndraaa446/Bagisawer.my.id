@@ -10,11 +10,13 @@
 - Overlay token rotation/revocation endpoints are present. Token resolution rejects revoked tokens, and the UI asks for confirmation before rotating or revoking.
 - Test-alert cooldown runs inside a database function with a per-creator transaction advisory lock. It checks for an active overlay token and alert settings before enqueueing.
 - Sandbox payment processing uses a unique provider-event ID and payload comparison for idempotency. The database function creates balanced ledger entries and queues one clearly labeled sandbox alert on first success.
+- Overlay URLs are generated from the incoming request origin, so preview links stay on the preview host instead of using the configured primary app URL.
+- Overlay API responses are non-cacheable; database read errors now fail closed rather than silently falling back to enabled alerts.
 
 ## Verification evidence
 
-- GitHub Actions Quality checks run #19 (`39803342414`) passed lint, typecheck, and production build for the code/migration batch; the later status-only commit did not change application code.
-- Netlify Deploy Preview status for commit `3cb4670db4cda0a9ef431a503d087bbb61d54e0b` is **success**. Netlify bot posted the preview URL: https://deploy-preview-1--bagisawe.netlify.app and deploy log: https://app.netlify.com/projects/bagisawe/deploys/6ada29805023955eac473189
+- GitHub Actions Quality checks run #19 (`39803342414`) passed lint, typecheck, and production build for the code/migration batch before the latest overlay API hardening; a fresh CI run is required for these newest changes.
+- Netlify Deploy Preview status for commit `3cb4670db4cda0a9ef431a503d087bbb61d54e0b` was **success**. Netlify bot posted the preview URL: https://deploy-preview-1--bagisawe.netlify.app and deploy log: https://app.netlify.com/projects/bagisawe/deploys/6ada29805023955eac473189. This is the previous commit; the latest code changes need their own preview build.
 - The preview has SSO team-login protection. Direct browser inspection from the available checker was blocked, so interactive UI and OBS behavior are **not yet verified**.
 - Supabase migration `atomic_test_alert_rate_limit` was applied to project `gzfeyyflrnrqrnbvgsow`.
 - Read-only invariant query: 1 sandbox donation, 1 payment event, 2 ledger entries, 0 unbalanced donations, and 0 duplicate provider-event IDs.
@@ -25,12 +27,12 @@
 
 ## Next work in point 4
 
-1. Verify dashboard and settings navigation, responsive UI, and error states.
-2. Test overlay token creation, rotation, and revocation; confirm revoked tokens are rejected.
-3. Verify test-alert enqueueing and display in the OBS Browser Source, including cooldown and disabled-alert cases.
-4. Re-run lint, typecheck, build, and relevant database invariant checks after any code changes.
+1. Confirm fresh CI and Netlify preview build results for the overlay API hardening.
+2. Verify dashboard and settings navigation, responsive UI, and error states.
+3. Test overlay token creation, rotation, and revocation; confirm revoked tokens are rejected.
+4. Verify test-alert enqueueing and display in the OBS Browser Source, including cooldown and disabled-alert cases.
 
-The preview's SSO restriction currently prevents the available external browser checker from completing steps 1–3. Do not weaken access protection just to bypass this limitation.
+The preview's SSO restriction currently prevents the available external browser checker from completing steps 2–4. Do not weaken access protection just to bypass this limitation.
 
 ## Deferred / not verified
 
