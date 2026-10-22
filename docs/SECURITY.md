@@ -24,7 +24,7 @@
 ## OBS overlay tokens and test events
 - Overlay tokens are generated with high entropy; only a SHA-256 hash is stored. Creating a new token replaces the previous token, and revocation invalidates the current URL.
 - The overlay token table has RLS enabled and no browser-role grants/policies. Only server-side code with a Supabase service/secret key may resolve token hashes.
-- Set `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` in Vercel Production/Preview as a secret environment variable. Never prefix it with `NEXT_PUBLIC_`, never commit it, and never expose its value in logs or client responses.
+- Set `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` in Vercel Production/Preview as a secret environment variable. The app origin override, if used, is `NEXT_PUBLIC_APP_URL`. Never prefix it with `NEXT_PUBLIC_`, never commit it, and never expose its value in logs or client responses.
 - Test events are constrained to `source='test'` and `event_type='test'`; they do not create donations or ledger entries. Browser clients cannot update/delete event status.
 - The OBS URL is a bearer secret. Share only with the streaming software; rotate it if exposed. Token routes return no-store responses and the overlay page opts out of indexing.
 - Until the server-only secret is configured, token/overlay endpoints deliberately return a configuration error rather than weakening database access policies.
