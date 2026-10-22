@@ -42,7 +42,8 @@ export async function GET() {
     .eq("user_id", user.id);
 
   if (error) return json({ error: "Status overlay per fitur belum dapat dibaca." }, 503);
-  const byFeature = new Map((data ?? []).map((row) => [row.feature_key, row]));
+  const byFeature = new Map<string, { feature_key: string; revoked_at: string | null; created_at: string | null }>();
+  for (const row of data ?? []) byFeature.set(row.feature_key, row);
   return json({
     features: FEATURE_KEYS.map((featureKey) => {
       const row = byFeature.get(featureKey);
