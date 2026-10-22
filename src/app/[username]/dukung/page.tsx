@@ -33,7 +33,7 @@ export default function CreatorSupportPage() {
   const [message, setMessage] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [method, setMethod] = useState("qris");
-  const [features, setFeatures] = useState<SupportFeature[]>([{ key: "saweran", label: "Saweran", description: "Dukungan nominal langsung", category: "donasi" }]);
+  const [features, setFeatures] = useState<SupportFeature[]>([{ key: "saweran", label: "Saweran", description: "Dukungan nominal langsung", category: "donasi", minimumAmount: 1000 }]);
   const [selectedFeature, setSelectedFeature] = useState("saweran");
   const selectedFeatureConfig = features.find((feature) => feature.key === selectedFeature) ?? features[0];
   const minimumAmount = selectedFeatureConfig?.minimumAmount ?? 1000;
