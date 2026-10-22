@@ -8,9 +8,9 @@ type Context = { params: Promise<{ token: string }> };
 
 const featureEventTypes: Record<string, string[]> = {
   saweran: ["test", "donation", "sandbox_donation"],
-  anonim: ["donation_anonymous"],
-  pesan: ["donation_message"],
-  target: ["goal", "milestone"],
+  anonim: ["anonim", "donation_anonymous"],
+  pesan: ["pesan", "donation_message"],
+  target: ["target", "goal", "milestone"],
   mediashare: ["mediashare"],
   voicenote: ["voicenote"],
   lagu: ["lagu", "song_request"],
