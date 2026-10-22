@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { FeatureOverlayLinks } from "@/components/feature-overlay-links";
 
 type Feature = { slug: string; icon: string; title: string; description: string; group: string; overlay?: boolean; status?: string };
 const features: Feature[] = [
@@ -102,7 +103,7 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
       ) : current === "overlay" ? (
         <>
           <div className="tool-section-head"><div><h2>Satu fitur, satu overlay</h2><p>Setiap modul di bawah mempunyai slot tautan sendiri. Token unik dan endpoint per jenis akan diaktifkan pada tahap backend; tautan contoh sengaja tidak dibuat seolah-olah sudah bisa dipakai di OBS.</p></div><Badge tone="amber">Token per fitur belum aktif</Badge></div>
-          <div className="tool-grid">{overlayTypes.map((feature) => <article className="tool-card" key={feature.slug}><div className="tool-card-top"><span className="tool-icon">{feature.icon}</span><div><h3>{feature.title}</h3><Badge>{feature.group}</Badge></div></div><p>{feature.description}</p><div className="tool-overlay-url"><small>OVERLAY KHUSUS · {feature.slug.toUpperCase()}</small><code>Belum dibuat — token unik {feature.slug}</code><small>URL akan dibuat dan dapat dicabut secara terpisah, tanpa berbagi token dengan fitur lain.</small></div><div className="tool-card-footer"><small>Token belum diterbitkan</small><button type="button" disabled>Buat URL overlay</button></div></article>)}</div>
+          <FeatureOverlayLinks features={overlayTypes} />
         </>
       ) : current === "donasi" || current === "interaksi" || current === "ekosistem" ? (
         <>
