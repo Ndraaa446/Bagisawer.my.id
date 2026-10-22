@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Field = {
   key: string;
@@ -130,6 +130,16 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
   ], [featureKey]);
   const [values, setValues] = useState<Record<string, string | number | boolean>>(() => Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""])));
   const [notice, setNotice] = useState("");
+  const storageKey = "bagisawer:feature-settings:" + featureKey;
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (!stored) return;
+      const parsed: unknown = JSON.parse(stored);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) setValues((previous) => ({ ...previous, ...(parsed as Record<string, string | number | boolean>) }));
+    } catch { setNotice("Pengaturan lokal tidak dapat dibaca. Nilai awal tetap tersedia."); }
+  }, [storageKey]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -149,12 +159,12 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
         return;
       }
     }
-    setNotice("Validasi pratinjau berhasil. Pengaturan ini hanya berada di sesi halaman ini; database dan pemrosesan event belum diaktifkan untuk modul ini.");
+    try { window.localStorage.setItem(storageKey, JSON.stringify(values)); setNotice("Pengaturan tersimpan di browser ini saja; belum tersinkron ke akun/server atau event produksi."); } catch { setNotice("Browser tidak dapat menyimpan pengaturan lokal."); }
   }
 
   return (
     <form className="tool-card" onSubmit={submit} style={{display:"grid",gap:15}}>
-      <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Kontrol berikut menampilkan bentuk pengaturan yang disiapkan. Simpan hanya mengubah pratinjau lokal, bukan data produksi.</p></div>
+      <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Pengaturan disimpan di browser perangkat ini agar tetap ada saat halaman dibuka kembali. Belum tersinkron ke akun/server dan tidak mengubah event produksi.</p></div>
       {fields.map((field) => (
         <label key={field.key} style={{display:"grid",gap:7,fontSize:12,fontWeight:700}}>
           {field.type === "toggle" ? (
@@ -170,7 +180,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
           {field.help && <small style={{fontSize:10,color:"var(--muted)",lineHeight:1.6}}>{field.help}</small>}
         </label>
       ))}
-      <button className="btn btn-primary" type="submit">Simpan pratinjau</button>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button className="btn btn-primary" type="submit">Simpan pengaturan lokal</button><button className="btn btn-ghost" type="button" onClick={() => { window.localStorage.removeItem(storageKey); setValues(Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""]))); setNotice("Pengaturan lokal dihapus dan nilai awal dipulihkan."); }}>Pulihkan nilai awal</button></div>
       {notice && <p className="auth-message" role="status">{notice}</p>}
     </form>
   );
