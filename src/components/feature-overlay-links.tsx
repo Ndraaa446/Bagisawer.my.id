@@ -99,6 +99,10 @@ export function FeatureOverlayLinks({ features }: Props) {
 
   return (
     <>
+      <div className="tool-card-footer" style={{marginBottom:16}}>
+        <small>Segarkan status token dari server jika status overlay berubah di tab lain.</small>
+        <button type="button" disabled={busy !== null || testBusy !== null} onClick={() => void refresh()}>Muat ulang status</button>
+      </div>
       {error && <p className="auth-error" role="alert">{error}</p>}
       {notice && <p className="auth-message" role="status">{notice}</p>}
       <div className="tool-grid">
