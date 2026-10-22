@@ -86,7 +86,14 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
     <main className="wrap dashboard-page">
       <header className="nav dashboard-nav">
         <Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
-        <div className="dashboard-user"><span>{email}</span><Link className="btn btn-ghost" href="/dashboard/fitur">Pusat fitur</Link><Link className="btn btn-ghost" href="/dashboard/streaming">Livestream & OBS</Link><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
+        <nav className="creator-nav-menu" aria-label="Menu kreator">
+          <Link href="/dashboard" className="creator-nav-link creator-nav-active">Ringkasan</Link>
+          <Link href="/dashboard/fitur/donasi" className="creator-nav-link">Donasi</Link>
+          <Link href="/dashboard/fitur/pembayaran" className="creator-nav-link">Pembayaran</Link>
+          <Link href="/dashboard/streaming" className="creator-nav-link">Livestream & OBS</Link>
+          <Link href="/dashboard/fitur/overlay" className="creator-nav-link">Overlay</Link>
+        </nav>
+        <div className="dashboard-user"><span>{email}</span><form action="/auth/signout" method="post"><button className="btn btn-ghost" type="submit">Keluar</button></form></div>
       </header>
 
       <section className="dashboard-intro">
@@ -95,6 +102,7 @@ export function CreatorDashboard({ initialProfile, email }: { initialProfile: Cr
         <p className="dashboard-copy">Kelola identitas kreator dan siapkan halaman yang bisa kamu bagikan ke komunitas.</p>
       </section>
 
+      <nav className="creator-quick-menu" aria-label="Akses cepat kreator"><Link href="/dashboard/fitur">✦ <span>Semua fitur</span></Link><Link href="/dashboard/fitur/donasi">♡ <span>Donasi & dukungan</span></Link><Link href="/dashboard/fitur/pembayaran">▦ <span>Metode pembayaran</span></Link><Link href="/dashboard/streaming">▣ <span>Overlay OBS</span></Link><Link href={`/${profile.username}/dukung`} target="_blank">↗ <span>Halaman dukungan</span></Link></nav>
       <div className="dashboard-layout">
         <section className="feature-card dashboard-editor">
           <div className="section-kicker">PROFIL KREATOR</div>
