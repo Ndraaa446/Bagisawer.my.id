@@ -57,7 +57,17 @@ export default function CreatorSupportPage() {
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNotice("Checkout belum aktif: Bagisawer belum menghubungkan penyedia pembayaran. Tidak ada transaksi atau penarikan uang yang dibuat. Pilihan metode di halaman ini hanya pratinjau UI.");
+    const value = customAmount.trim() ? Number(customAmount) : amount;
+    if (!Number.isFinite(value) || value < 1000 || value > 100000000 || value % 1000 !== 0) {
+      setNotice("Periksa nominal dukungan: minimum Rp1.000, maksimum Rp100.000.000, dan harus kelipatan Rp1.000.");
+      return;
+    }
+    if (name.trim().length > 80 || message.trim().length > 240) {
+      setNotice("Nama maksimal 80 karakter dan pesan maksimal 240 karakter.");
+      return;
+    }
+    const chosenMethod = methods.find((item) => item.id === method)?.name ?? "metode pilihan";
+    setNotice(`Pratinjau berhasil divalidasi: ${formatIDR(value)} melalui ${chosenMethod}. Checkout belum aktif, tidak ada transaksi yang dibuat, dan tidak ada uang yang ditarik.`);
   }
 
   const selectedAmount = customAmount.trim() ? Number(customAmount) : amount;
