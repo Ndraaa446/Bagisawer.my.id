@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Feature = { slug: string; icon: string; title: string; description: string; group: string };
 type OverlayStatus = { active: boolean; createdAt: string | null };
@@ -13,7 +13,7 @@ export function FeatureOverlayLinks({ features }: Props) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     try {
       const response = await fetch("/api/streaming/overlay-links", { cache: "no-store" });
       const data = await response.json();
@@ -26,9 +26,9 @@ export function FeatureOverlayLinks({ features }: Props) {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Status overlay belum dapat dimuat.");
     }
-  }
+  }, []);
 
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => { void refresh(); }, [refresh]);
 
   async function manage(featureKey: string, action: "create" | "revoke") {
     if (busy) return;
