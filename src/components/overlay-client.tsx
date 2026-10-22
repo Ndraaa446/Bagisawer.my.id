@@ -19,7 +19,7 @@ type AlertEvent = {
   amount: number;
 };
 
-type Payload = { settings: OverlaySettings; event: AlertEvent | null; featureKey?: string };
+type Payload = { settings: OverlaySettings; event: AlertEvent | null; featureKey?: string; featureConfiguration?: Record<string, unknown> };
 
 const fallbackSettings: OverlaySettings = {
   alert_enabled: true,
@@ -52,7 +52,7 @@ const featureTitles: Record<string, string> = {
 
 export function OverlayClient({ token }: { token: string }) {
   const [settings, setSettings] = useState(fallbackSettings);
-  const [featureKey, setFeatureKey] = useState("general");
+  const [featureKey, setFeatureKey] = useState("general");\n  const [featureConfiguration, setFeatureConfiguration] = useState<Record<string, unknown>>({});
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [invalid, setInvalid] = useState(false);
   const activeRef = useRef(false);
@@ -71,7 +71,7 @@ export function OverlayClient({ token }: { token: string }) {
         const payload = await response.json() as Payload;
         if (stopped) return;
         setSettings(payload.settings ?? fallbackSettings);
-        setFeatureKey(payload.featureKey ?? "general");
+        setFeatureKey(payload.featureKey ?? "general");\n        setFeatureConfiguration(payload.featureConfiguration ?? {});
         if (payload.event && !activeRef.current) {
           activeRef.current = true;
           setActiveAlert(payload.event);
@@ -104,14 +104,14 @@ export function OverlayClient({ token }: { token: string }) {
         activeRef.current = false;
         setActiveAlert(null);
       }
-    }, Math.max(3, Math.min(15, settings.duration_seconds)) * 1000);
+    }, Math.max(3, Math.min(600, Number(featureConfiguration.duration ?? settings.duration_seconds))) * 1000);
 
     return () => window.clearTimeout(timer);
-  }, [activeAlert, settings.duration_seconds, token]);
+  }, [activeAlert, settings.duration_seconds, featureConfiguration.duration, token]);
 
   if (invalid || !settings.alert_enabled) return null;
   const testLabel = activeAlert?.source === "test" || activeAlert?.event_type === "test";
-  const title = featureTitles[featureKey] ?? "Dukungan baru";
+  const title = featureTitles[featureKey] ?? "Dukungan baru";\n  const messageLimit = Number(featureConfiguration.limit ?? featureConfiguration.messageLimit ?? 240);\n  const visibleMessage = activeAlert?.message ? activeAlert.message.slice(0, Number.isFinite(messageLimit) ? Math.max(0, Math.min(500, messageLimit)) : 240) : "";
 
   return (
     <main className="overlay-root" aria-live="polite">
@@ -127,14 +127,14 @@ export function OverlayClient({ token }: { token: string }) {
       `}</style>
       {activeAlert && (featureKey === "running-text" ? (
         <section className="overlay-running-text" role="status">
-          <strong>{testLabel ? "UJI COBA" : title}</strong><span>{activeAlert.donor_name}: {activeAlert.message}</span>
+          <strong>{testLabel ? "UJI COBA" : title}</strong><span>{activeAlert.donor_name}: {visibleMessage}</span>
         </section>
       ) : featureKey === "mediashare" || featureKey === "voicenote" || featureKey === "lagu" ? (
         <section className="overlay-module-card" role="status">
           <div className="overlay-module-icon">{featureKey === "mediashare" ? "▶" : featureKey === "voicenote" ? "♫" : "♪"}</div>
           <div className="overlay-module-copy">
             <span className="overlay-feature-label">{testLabel ? "UJI COBA · BUKAN DONASI" : title.toUpperCase()}</span>
-            <strong>{activeAlert.donor_name}</strong><p>{activeAlert.message}</p>
+            <strong>{activeAlert.donor_name}</strong><p>{visibleMessage}</p>
             <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
             <div className="overlay-feature-note">{featureKey === "mediashare" ? "Pemutaran media memerlukan validasi URL dan moderasi." : featureKey === "voicenote" ? "Pemutaran audio menunggu validasi dan persetujuan." : "Permintaan lagu harus memakai integrasi resmi yang diizinkan."}</div>
           </div>

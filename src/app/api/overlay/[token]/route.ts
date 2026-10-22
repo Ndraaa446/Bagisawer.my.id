@@ -44,7 +44,7 @@ async function resolveToken(token: string) {
     const featureKey = featureToken.feature_key as string;
     const { data: featureSetting, error: featureSettingError } = await admin
       .from("creator_feature_settings")
-      .select("overlay_enabled")
+      .select("overlay_enabled, configuration")
       .eq("user_id", featureToken.user_id)
       .eq("feature_key", featureKey)
       .maybeSingle();
@@ -78,7 +78,7 @@ async function resolveToken(token: string) {
   const excludeEventTypes = Array.from(new Set((activeFeatureTokens ?? []).flatMap((row) =>
     featureEventTypes[row.feature_key as string] ?? [row.feature_key as string]
   )));
-  return { admin, userId, featureKey: "general", eventTypes: null as string[] | null, excludeEventTypes };
+  return { admin, userId, featureKey: "general", featureConfiguration: {} as Record<string, unknown>, eventTypes: null as string[] | null, excludeEventTypes };
 }
 
 function noStoreJson(body: unknown, status = 200) {
@@ -107,7 +107,7 @@ export async function GET(_request: Request, context: Context) {
     return notFound();
   }
 
-  const { admin, userId, featureKey, eventTypes, excludeEventTypes } = resolved;
+  const { admin, userId, featureKey, featureConfiguration, eventTypes, excludeEventTypes } = resolved;
   const { data: settings, error: settingsError } = await admin
     .from("creator_stream_settings")
     .select("alert_enabled, minimum_amount, duration_seconds, theme, sound_enabled")
