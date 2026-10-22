@@ -137,6 +137,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
   const [values, setValues] = useState<Record<string, string | number | boolean>>(() => Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""])));
   const [notice, setNotice] = useState("");
   const [featureEnabled, setFeatureEnabled] = useState(featureKey === "saweran");
+  const [overlayEnabled, setOverlayEnabled] = useState(false);
   const [activationLoading, setActivationLoading] = useState(true);
   const storageKey = "bagisawer:feature-settings:" + featureKey;
 
@@ -148,6 +149,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
       const item = (data.features ?? []).find((entry: { featureKey: string; enabled: boolean }) => entry.featureKey === featureKey);
       if (!cancelled) {
         setFeatureEnabled(Boolean(item?.enabled));
+        setOverlayEnabled(Boolean(item?.overlayEnabled));
         if (item && Number.isSafeInteger(item.minimumAmount)) setValues((previous) => ({ ...previous, minimum: item.minimumAmount }));
       }
     }).catch(() => { if (!cancelled) setNotice("Status aktivasi server belum dapat dimuat; periksa koneksi dan coba simpan kembali."); })
@@ -208,10 +210,10 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
     }
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(values));
-      const response = await fetch("/api/streaming/feature-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey, enabled: featureEnabled, minimumAmount: Number(values.minimum ?? 1000) }), cache: "no-store" });
+      const response = await fetch("/api/streaming/feature-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey, enabled: featureEnabled, overlayEnabled, minimumAmount: Number(values.minimum ?? 1000) }), cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Status aktivasi fitur gagal disimpan.");
-      setNotice(`${featureEnabled ? "Fitur aktif" : "Fitur dinonaktifkan"}; minimal donasi ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(values.minimum ?? 1000))} tersimpan di server.`);
+      setNotice(`${featureEnabled ? "Pilihan /dukung aktif" : "Pilihan /dukung nonaktif"}; overlay ${overlayEnabled ? "aktif" : "nonaktif"}; minimal donasi ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(values.minimum ?? 1000))} tersimpan di server.`);
     } catch (error) { setNotice(error instanceof Error ? error.message : "Pengaturan gagal disimpan."); }
   }
 
@@ -219,6 +221,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
     <form className="tool-card" onSubmit={submit} style={{display:"grid",gap:15}}>
       <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Status aktivasi disimpan ke server akun kreator dan mengatur apakah pilihan ini muncul di halaman dukungan publik. Minimal donasi dan status aktif/nonaktif disimpan di server akun kreator. Pengaturan lain masih disimpan lokal di browser.</p></div>
       <label style={{display:"flex",alignItems:"center",gap:10,padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="checkbox" checked={featureEnabled} disabled={featureKey === "saweran" || activationLoading} onChange={(event) => setFeatureEnabled(event.target.checked)} /><span><strong>{featureKey === "saweran" ? "Saweran utama selalu aktif" : "Tampilkan fitur ini di halaman dukungan"}</strong><small style={{display:"block",fontWeight:400,color:"var(--muted)",marginTop:4}}>{featureKey === "saweran" ? "Fitur dasar untuk menerima dukungan." : "Saat dinonaktifkan, pendukung tidak akan melihat pilihan ini."}</small></span></label>
+      <label style={{display:"flex",alignItems:"center",gap:10,padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="checkbox" checked={overlayEnabled} onChange={(event) => setOverlayEnabled(event.target.checked)} /><span><strong>Aktifkan overlay khusus fitur ini</strong><small style={{display:"block",fontWeight:400,color:"var(--muted)",marginTop:4}}>Terpisah dari pilihan di /dukung. Jika nonaktif, overlay ini tidak akan menerima event meskipun URL masih aktif.</small></span></label>
       {fields.map((field) => (
         <label key={field.key} style={{display:"grid",gap:7,fontSize:12,fontWeight:700}}>
           {field.type === "toggle" ? (
