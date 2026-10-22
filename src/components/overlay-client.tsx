@@ -12,8 +12,8 @@ type OverlaySettings = {
 
 type AlertEvent = {
   id: string;
-  event_type: "test";
-  source: "test";
+  event_type: string;
+  source: string;
   donor_name: string;
   message: string;
   amount: number;
@@ -94,7 +94,7 @@ export function OverlayClient({ token }: { token: string }) {
         <section className={`overlay-alert overlay-${settings.theme}`} role="status">
           <div className="overlay-heart" aria-hidden="true">♡</div>
           <div className="overlay-copy">
-            <span className="overlay-test-label">UJI COBA · BUKAN DONASI</span>
+            <span className="overlay-test-label">{activeAlert.source === "test" || activeAlert.event_type === "test" ? "UJI COBA · BUKAN DONASI" : "DUKUNGAN KOMUNITAS"}</span>
             <strong>{activeAlert.donor_name}</strong>
             <p>{activeAlert.message}</p>
             <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
