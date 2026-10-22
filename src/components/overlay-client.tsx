@@ -19,7 +19,7 @@ type AlertEvent = {
   amount: number;
 };
 
-type Payload = { settings: OverlaySettings; event: AlertEvent | null };
+type Payload = { settings: OverlaySettings; event: AlertEvent | null; featureKey?: string };
 
 const fallbackSettings: OverlaySettings = {
   alert_enabled: true,
@@ -29,8 +29,30 @@ const fallbackSettings: OverlaySettings = {
   sound_enabled: true
 };
 
+const featureTitles: Record<string, string> = {
+  general: "Dukungan baru",
+  saweran: "Saweran masuk",
+  anonim: "Dukungan anonim",
+  pesan: "Pesan dukungan",
+  target: "Target dukungan",
+  mediashare: "Permintaan media",
+  voicenote: "Voice note masuk",
+  lagu: "Request lagu",
+  qris: "Dukungan QR",
+  leaderboard: "Peringkat pendukung",
+  subathon: "Subathon",
+  "running-text": "Running text",
+  soundboard: "Soundboard",
+  polling: "Polling",
+  "vip-queue": "VIP queue",
+  bagpao: "Bagpao",
+  gachaton: "Gachaton",
+  bidcoin: "Bidcoin"
+};
+
 export function OverlayClient({ token }: { token: string }) {
   const [settings, setSettings] = useState(fallbackSettings);
+  const [featureKey, setFeatureKey] = useState("general");
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [invalid, setInvalid] = useState(false);
   const activeRef = useRef(false);
@@ -49,6 +71,7 @@ export function OverlayClient({ token }: { token: string }) {
         const payload = await response.json() as Payload;
         if (stopped) return;
         setSettings(payload.settings ?? fallbackSettings);
+        setFeatureKey(payload.featureKey ?? "general");
         if (payload.event && !activeRef.current) {
           activeRef.current = true;
           setActiveAlert(payload.event);
@@ -87,20 +110,46 @@ export function OverlayClient({ token }: { token: string }) {
   }, [activeAlert, settings.duration_seconds, token]);
 
   if (invalid || !settings.alert_enabled) return null;
+  const testLabel = activeAlert?.source === "test" || activeAlert?.event_type === "test";
+  const title = featureTitles[featureKey] ?? "Dukungan baru";
 
   return (
     <main className="overlay-root" aria-live="polite">
-      {activeAlert && (
-        <section className={`overlay-alert overlay-${settings.theme}`} role="status">
-          <div className="overlay-heart" aria-hidden="true">♡</div>
+      <style>{`
+        .overlay-feature-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.5px;color:#d9ccff;margin-bottom:7px}
+        .overlay-feature-note{font-size:10px;color:#c4b5fd;line-height:1.5;margin-top:7px}
+        .overlay-running-text{max-width:100%;padding:14px 24px;border:1px solid #a78bfa70;border-radius:12px;background:#120e1de8;color:#fff;box-shadow:0 10px 35px #0006;overflow:hidden;white-space:nowrap}
+        .overlay-running-text strong{color:#d9ccff;margin-right:12px}
+        .overlay-module-card{display:flex;gap:16px;align-items:center;max-width:700px;padding:20px 24px;border:1px solid #a78bfa70;border-radius:16px;background:linear-gradient(120deg,#211637f2,#100e17f2);box-shadow:0 16px 45px #0007;color:white}
+        .overlay-module-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#a78bfa24;color:#e9d5ff;font-size:23px;flex-shrink:0}
+        .overlay-module-copy strong{font-size:19px;display:block}.overlay-module-copy p{font-size:13px;color:#ddd6eb;line-height:1.6;margin:5px 0}
+        .overlay-module-copy b{font-size:15px;color:#c4b5fd}
+      `}</style>
+      {activeAlert && (featureKey === "running-text" ? (
+        <section className="overlay-running-text" role="status">
+          <strong>{testLabel ? "UJI COBA" : title}</strong><span>{activeAlert.donor_name}: {activeAlert.message}</span>
+        </section>
+      ) : featureKey === "mediashare" || featureKey === "voicenote" || featureKey === "lagu" ? (
+        <section className="overlay-module-card" role="status">
+          <div className="overlay-module-icon">{featureKey === "mediashare" ? "▶" : featureKey === "voicenote" ? "♫" : "♪"}</div>
+          <div className="overlay-module-copy">
+            <span className="overlay-feature-label">{testLabel ? "UJI COBA · BUKAN DONASI" : title.toUpperCase()}</span>
+            <strong>{activeAlert.donor_name}</strong><p>{activeAlert.message}</p>
+            <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
+            <div className="overlay-feature-note">{featureKey === "mediashare" ? "Pemutaran media memerlukan validasi URL dan moderasi." : featureKey === "voicenote" ? "Pemutaran audio menunggu validasi dan persetujuan." : "Permintaan lagu harus memakai integrasi resmi yang diizinkan."}</div>
+          </div>
+        </section>
+      ) : (
+        <section className={`overlay-alert overlay-${settings.theme} overlay-feature-${featureKey}`} role="status">
+          <div className="overlay-heart" aria-hidden="true">{featureKey === "leaderboard" ? "♜" : featureKey === "subathon" ? "◷" : featureKey === "polling" ? "☷" : featureKey === "soundboard" ? "◖" : "♡"}</div>
           <div className="overlay-copy">
-            <span className="overlay-test-label">{activeAlert.source === "test" || activeAlert.event_type === "test" ? "UJI COBA · BUKAN DONASI" : "DUKUNGAN KOMUNITAS"}</span>
+            <span className="overlay-test-label">{testLabel ? "UJI COBA · BUKAN DONASI" : title.toUpperCase()}</span>
             <strong>{activeAlert.donor_name}</strong>
             <p>{activeAlert.message}</p>
             <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
           </div>
         </section>
-      )}
+      ))}
     </main>
   );
 }
