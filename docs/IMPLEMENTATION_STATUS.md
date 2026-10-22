@@ -1,12 +1,12 @@
 # Implementation Status
 
-This file is retained as a compatibility pointer. The canonical, current status and verification evidence are maintained in [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md).
+This file is retained as a compatibility pointer. The canonical status, feature-screen inventory, and verification evidence are maintained in [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md).
 
-As of 2026-10-22:
-- Roadmap position: point 4 of 10 (OBS, alertbox, and notifications).
-- Netlify Deploy Preview for commit `3cb4670db4cda0a9ef431a503d087bbb61d54e0b` has a successful status, but its SSO team-login protection blocks external interactive browser testing.
-- CI lint, typecheck, and production build passed for the code/migration batch.
-- Supabase sandbox invariants and test-alert RPC permissions were verified.
-- End-to-end UI/OBS testing, auth flows, leaked-password protection, and real payment/payout flows remain open or deferred.
+Current status summary (2026-10-22):
+- Roadmap: Poin 4/10 remains open for OBS end-to-end verification; Poin 5 has started, and Poin 8 UI work is being developed in parallel.
+- New UI surfaces include creator feature center, support-page preview, payment-method catalogue, public explore/contact/refund/fees/status pages, and per-feature overlay management.
+- Per-feature overlay tokens and feature-specific test-alert RPC exist in Supabase. Browser roles are explicitly denied access to the token table.
+- Latest UI/token batch has no confirmed lint/typecheck/build result. Vercel reports the account deployment-rate limit; latest Netlify preview status is not confirmed.
+- Real payment/payout flows, auth end-to-end testing, and live OBS behavior remain unverified. Leaked-password protection remains disabled.
 
 Do not merge to `main` or publish production without explicit approval.
