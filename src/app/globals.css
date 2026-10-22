@@ -187,3 +187,39 @@ h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(29px,4vw,43px);letter-
 @keyframes alert-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:800px){.streaming-layout{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.sample-alert{animation:none}}
+
+
+/* Private OBS overlay management */
+.overlay-token-panel{padding:24px}
+.overlay-token-panel h3{font-size:18px;margin:12px 0}
+.overlay-token-status{display:flex;align-items:center;gap:8px;font-size:12px;color:#ded9e9;margin:14px 0}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#817a94;display:inline-block}
+.status-active{background:#9be6c1;box-shadow:0 0 10px #9be6c180}
+.status-inactive{background:#a7a1b8}
+.status-unavailable{background:#fca5a5}
+.status-loading{background:#c4b5fd}
+.overlay-url-box{display:grid;gap:10px;border:1px solid #a78bfa45;background:#0e0c14;padding:12px;border-radius:12px;margin:15px 0}
+.overlay-url-box code{font-size:11px;line-height:1.7;overflow-wrap:anywhere;color:#e9d5ff;user-select:all}
+.overlay-url-box p{font-size:10px;color:var(--muted);line-height:1.6;margin:0}
+.overlay-config-note{margin:12px 0}
+.overlay-test-button{width:100%;margin-top:12px}
+.overlay-test-button:disabled{opacity:.45;cursor:not-allowed}
+.overlay-footnote{margin:12px 0 0}
+.overlay-root{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:transparent;color:#fff;font-family:'DM Sans',sans-serif;pointer-events:none;overflow:hidden}
+.overlay-alert{display:flex;align-items:center;gap:18px;width:min(680px,100%);padding:24px 28px;border:1px solid #a78bfa90;border-radius:22px;background:linear-gradient(130deg,#26173eef,#100d19ed);box-shadow:0 18px 55px #0005,0 0 35px #7c3aed30;animation:overlay-alert-in .3s ease-out;backdrop-filter:blur(12px)}
+.overlay-heart{width:60px;height:60px;flex:0 0 60px;border-radius:18px;display:grid;place-items:center;background:#a78bfa2b;color:#e9d5ff;font-size:35px}
+.overlay-copy{min-width:0;display:grid;gap:7px}
+.overlay-test-label{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#c4b5fd}
+.overlay-copy strong{font-family:'Space Grotesk',sans-serif;font-size:clamp(20px,3vw,30px);line-height:1.15;overflow-wrap:anywhere}
+.overlay-copy p{font-size:15px;color:#d8d1e8;margin:0;overflow-wrap:anywhere}
+.overlay-copy b{font-size:19px;color:#c4b5fd}
+.overlay-minimal{background:#f8f6fcf2;color:#21182f;border-color:#ded2f4;box-shadow:0 15px 50px #0003}
+.overlay-minimal .overlay-heart{background:#e9ddff;color:#6d28d9}
+.overlay-minimal .overlay-test-label,.overlay-minimal .overlay-copy b{color:#6d28d9}
+.overlay-minimal .overlay-copy p{color:#665b76}
+.overlay-neon{background:#071d1af2;border-color:#22f5b7;box-shadow:0 0 35px #22f5b735}
+.overlay-neon .overlay-heart{background:#22f5b722;color:#22f5b7}
+.overlay-neon .overlay-test-label,.overlay-neon .overlay-copy b{color:#22f5b7}
+@keyframes overlay-alert-in{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:520px){.overlay-root{padding:14px}.overlay-alert{padding:18px;gap:12px;border-radius:16px}.overlay-heart{width:44px;height:44px;flex-basis:44px;font-size:27px;border-radius:13px}.overlay-copy p{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.overlay-alert{animation:none}}
