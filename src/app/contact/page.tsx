@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 
-export const metadata = { title: "Kontak — Bagisawer" };
-
 export default function ContactPage() {
   const [category, setCategory] = useState("umum");
   const [email, setEmail] = useState("");
