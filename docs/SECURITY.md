@@ -19,3 +19,12 @@
 - Add the production origin and `https://bagisawer.vercel.app/auth/callback` to the Auth redirect URL allowlist. Add localhost callback only for local development.
 - Email confirmation and password recovery depend on Supabase email delivery/template settings and the redirect allowlist; repository code alone cannot guarantee delivery.
 - Test with a dedicated test account. Do not disable email confirmation just to make registration appear to work.
+
+
+## OBS overlay tokens and test events
+- Overlay tokens are generated with high entropy; only a SHA-256 hash is stored. Creating a new token replaces the previous token, and revocation invalidates the current URL.
+- The overlay token table has RLS enabled and no browser-role grants/policies. Only server-side code with a Supabase service/secret key may resolve token hashes.
+- Set `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` in Vercel Production/Preview as a secret environment variable. Never prefix it with `NEXT_PUBLIC_`, never commit it, and never expose its value in logs or client responses.
+- Test events are constrained to `source='test'` and `event_type='test'`; they do not create donations or ledger entries. Browser clients cannot update/delete event status.
+- The OBS URL is a bearer secret. Share only with the streaming software; rotate it if exposed. Token routes return no-store responses and the overlay page opts out of indexing.
+- Until the server-only secret is configured, token/overlay endpoints deliberately return a configuration error rather than weakening database access policies.
