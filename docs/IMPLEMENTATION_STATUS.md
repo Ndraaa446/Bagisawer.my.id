@@ -21,12 +21,14 @@ Updated: 2026-10-22
 - Creator profile database migration: username, display name, bio, publication toggle, timestamps, unique case-insensitive username index, signup trigger and backfill for existing users.
 - Row Level Security enabled on `public.creator_profiles` with owner-only insert/update and public-only profile reads (owners can read their own private profile).
 - Creator dashboard wired to profile database with validation, save feedback and responsive profile preview.
-- Creator livestream settings page backed by `public.creator_stream_settings`, with owner-scoped RLS, alert enable/threshold/duration/theme/sound preferences and an explicitly local-only alert preview.
+- Creator livestream settings page backed by `public.creator_stream_settings`, with owner-scoped RLS, alert enable/threshold/duration/theme/sound preferences and a local preview.
+- Private OBS overlay token lifecycle and isolated test-alert pipeline implemented in code: high-entropy token generated server-side, only SHA-256 hash stored, rotate/revoke controls, token-authenticated minimal overlay API, expiring test events, and OBS Browser Source page.
 - Public creator profile route at `/<username>`; unpublished profiles are not returned by the public page.
 - Basic security response headers and environment/security/payment/deployment docs.
 
 ## Verification evidence
-- Supabase migrations `creator_profiles_and_rls` and `creator_stream_settings` applied successfully and appear in migration history.
+- Supabase migrations for creator profiles, stream settings, overlay tokens, and isolated test-alert events applied; verify latest migration history before release.
+- `public.overlay_tokens` has RLS enabled with no client policies/grants; server-only service access is required. `public.alert_events` allows authenticated owners to read/insert test-only events and denies client update/delete.
 - `public.creator_stream_settings` has RLS enabled with owner-scoped select/insert/update policies; anonymous access is revoked.
 - Database inspection confirms `public.creator_profiles` exists with RLS enabled and three policies.
 - Supabase security and performance advisors returned no lints at the time checked.
@@ -39,7 +41,7 @@ Updated: 2026-10-22
 - Email confirmation, password recovery and sign-in must be tested end to end with a real test account.
 - Username is generated automatically on signup; creator can customize it in the dashboard.
 - Payment provider, checkout, signed webhooks, immutable ledger, payouts, refunds and reconciliation are not implemented.
-- Production alert delivery, private/revocable OBS overlay tokens, real-time event queue, store delivery, and complete admin/moderation dashboard are not active. The current alert preview is local-only.
+- Real donation-triggered alert delivery, WebSocket/realtime queue recovery, sound playback, store delivery, and complete admin/moderation dashboard are not active. The OBS test-alert flow requires a server-only `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` in Vercel; the project currently has no such variable configured, so token management/overlay API will return 503 until it is added.
 - Profile avatar upload is not enabled yet.
 - Privacy and terms are drafts, not final legal policies.
 - Payment and payout operations must remain disabled until a provider is selected and sandbox, webhook, reconciliation and security tests pass.
@@ -51,4 +53,4 @@ Updated: 2026-10-22
 4. Test RLS with anonymous, owner and other-user contexts.
 5. Add onboarding/profile polish and password-strength feedback.
 6. Select a payment provider only after requirements/fees are reviewed; implement sandbox and verified webhooks before any real transactions.
-7. Finish the streaming milestone with private/revocable overlay tokens, safe public overlay rendering, real-time event delivery, and tests before calling OBS integration production-ready.
+7. Add the Supabase service/secret key as a server-only Vercel environment variable, deploy, then test token create/rotate/revoke and the OBS test-alert loop. Add realtime delivery/recovery and sound before marking streaming production-ready.
