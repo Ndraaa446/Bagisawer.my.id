@@ -21,11 +21,13 @@ Updated: 2026-10-22
 - Creator profile database migration: username, display name, bio, publication toggle, timestamps, unique case-insensitive username index, signup trigger and backfill for existing users.
 - Row Level Security enabled on `public.creator_profiles` with owner-only insert/update and public-only profile reads (owners can read their own private profile).
 - Creator dashboard wired to profile database with validation, save feedback and responsive profile preview.
+- Creator livestream settings page backed by `public.creator_stream_settings`, with owner-scoped RLS, alert enable/threshold/duration/theme/sound preferences and an explicitly local-only alert preview.
 - Public creator profile route at `/<username>`; unpublished profiles are not returned by the public page.
 - Basic security response headers and environment/security/payment/deployment docs.
 
 ## Verification evidence
-- Supabase migration `creator_profiles_and_rls` applied successfully and appears in migration history.
+- Supabase migrations `creator_profiles_and_rls` and `creator_stream_settings` applied successfully and appear in migration history.
+- `public.creator_stream_settings` has RLS enabled with owner-scoped select/insert/update policies; anonymous access is revoked.
 - Database inspection confirms `public.creator_profiles` exists with RLS enabled and three policies.
 - Supabase security and performance advisors returned no lints at the time checked.
 - Vercel deployment for auth callback and password recovery pages `dpl_2w6EWMEAafkjAE5162GGtuz7EQxi` reached READY. Build output included `/auth/callback`, `/forgot-password`, and `/reset-password`.
@@ -37,7 +39,7 @@ Updated: 2026-10-22
 - Email confirmation, password recovery and sign-in must be tested end to end with a real test account.
 - Username is generated automatically on signup; creator can customize it in the dashboard.
 - Payment provider, checkout, signed webhooks, immutable ledger, payouts, refunds and reconciliation are not implemented.
-- No production alert pipeline, OBS overlay tokens, store delivery, or complete admin/moderation dashboard is active.
+- Production alert delivery, private/revocable OBS overlay tokens, real-time event queue, store delivery, and complete admin/moderation dashboard are not active. The current alert preview is local-only.
 - Profile avatar upload is not enabled yet.
 - Privacy and terms are drafts, not final legal policies.
 - Payment and payout operations must remain disabled until a provider is selected and sandbox, webhook, reconciliation and security tests pass.
@@ -49,4 +51,4 @@ Updated: 2026-10-22
 4. Test RLS with anonymous, owner and other-user contexts.
 5. Add onboarding/profile polish and password-strength feedback.
 6. Select a payment provider only after requirements/fees are reviewed; implement sandbox and verified webhooks before any real transactions.
-7. Continue streaming/overlay and admin tooling according to FEATURE_MATRIX.md, recording test evidence before marking anything production-ready.
+7. Finish the streaming milestone with private/revocable overlay tokens, safe public overlay rendering, real-time event delivery, and tests before calling OBS integration production-ready.
