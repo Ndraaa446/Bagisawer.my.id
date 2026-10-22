@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Creator = { username: string; display_name: string; bio: string | null; avatar_url: string | null };
-type SupportFeature = { key: string; label: string; description: string; category: "donasi" | "interaksi" };
+type SupportFeature = { key: string; label: string; description: string; category: "donasi" | "interaksi"; minimumAmount: number };
 const methods = [
   { id: "qris", name: "QRIS", detail: "Satu kode untuk aplikasi pembayaran yang mendukung" },
   { id: "va", name: "Virtual Account", detail: "VA bank sesuai dukungan provider" },
@@ -35,6 +35,8 @@ export default function CreatorSupportPage() {
   const [method, setMethod] = useState("qris");
   const [features, setFeatures] = useState<SupportFeature[]>([{ key: "saweran", label: "Saweran", description: "Dukungan nominal langsung", category: "donasi" }]);
   const [selectedFeature, setSelectedFeature] = useState("saweran");
+  const selectedFeatureConfig = features.find((feature) => feature.key === selectedFeature) ?? features[0];
+  const minimumAmount = selectedFeatureConfig?.minimumAmount ?? 1000;
   const [featureLoadError, setFeatureLoadError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -76,8 +78,8 @@ export default function CreatorSupportPage() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = customAmount.trim() ? Number(customAmount) : amount;
-    if (!Number.isFinite(value) || value < 1000 || value > 100000000 || value % 1000 !== 0) {
-      setNotice("Periksa nominal dukungan: minimum Rp1.000, maksimum Rp100.000.000, dan harus kelipatan Rp1.000.");
+    if (!Number.isFinite(value) || value < minimumAmount || value > 100000000 || value % 1000 !== 0) {
+      setNotice(`Nominal untuk ${selectedFeatureConfig?.label ?? "fitur ini"} harus minimal ${formatIDR(minimumAmount)}, maksimal Rp100.000.000, dan kelipatan Rp1.000.`);
       return;
     }
     if (name.trim().length > 80 || message.trim().length > 240) {
@@ -119,11 +121,11 @@ export default function CreatorSupportPage() {
               <h2>Dukunganmu berarti.</h2>
               <p className="support-intro">Pilih nominal, tulis pesan jika mau, lalu pilih metode yang ingin kamu gunakan. Metode saat ini belum aktif.</p>
               <form onSubmit={submit}>
-                <div className="support-field"><span className="support-label">Pilih nominal</span><div className="support-amounts">{amounts.map((value) => <button key={value} type="button" className={amount === value && !customAmount ? "support-amount active" : "support-amount"} onClick={() => { setAmount(value); setCustomAmount(""); }}>{formatIDR(value)}</button>)}</div></div>
+                <div className="support-field"><span className="support-label">Pilih nominal</span><small style={{color:"#a7a1b8"}}>Minimal untuk {selectedFeatureConfig?.label ?? "fitur ini"}: {formatIDR(minimumAmount)}</small><div className="support-amounts">{amounts.map((value) => <button key={value} type="button" disabled={value < minimumAmount} title={value < minimumAmount ? `Di bawah minimum ${formatIDR(minimumAmount)}` : undefined} className={amount === value && !customAmount ? "support-amount active" : "support-amount"} style={value < minimumAmount ? {opacity:.35,cursor:"not-allowed"} : undefined} onClick={() => { if (value >= minimumAmount) { setAmount(value); setCustomAmount(""); } }}>{formatIDR(value)}</button>)}</div></div>
                 <div className="support-field"><span className="support-label">Pilih jenis dukungan</span><p style={{fontSize:11,color:"#a7a1b8",lineHeight:1.6,margin:0}}>Pilihan berikut mengikuti fitur yang diaktifkan kreator. Fitur yang belum diaktifkan tidak ditampilkan.</p>{featureLoadError && <small role="status" style={{color:"#fde68a"}}>Status fitur belum dapat dimuat dari server: {featureLoadError}</small>}<div className="support-feature-grid">{features.map((feature) => <label key={feature.key} className={selectedFeature === feature.key ? "support-feature active" : "support-feature"}><input type="radio" name="support-feature" value={feature.key} checked={selectedFeature === feature.key} onChange={() => setSelectedFeature(feature.key)} /><span><strong>{feature.label}</strong><small>{feature.description}</small></span></label>)}</div></div>
-                <div className="support-field"><label htmlFor="custom-amount">Nominal lainnya (Rp)</label><input id="custom-amount" type="number" min="1000" max="100000000" step="1000" value={customAmount} onChange={(event) => setCustomAmount(event.target.value)} placeholder="Contoh: 75000" /></div>
+                <div className="support-field"><label htmlFor="custom-amount">Nominal lainnya (Rp)</label><input id="custom-amount" type="number" min={minimumAmount} max="100000000" step="1000" value={customAmount} onChange={(event) => setCustomAmount(event.target.value)} placeholder="Contoh: 75000" /></div>
                 <div className="support-field"><label htmlFor="support-name">Nama pendukung (opsional)</label><input id="support-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} placeholder="Nama yang ingin ditampilkan" disabled={anonymous} /></div>
-                <label className="support-toggle"><input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} /><span>Dukung secara anonim. Nama tidak akan ditampilkan di halaman atau alert ketika integrasi aktif.</span></label>
+                {features.some((feature) => feature.key === "anonim") && <label className="support-toggle"><input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} /><span>Dukung secara anonim. Nama tidak akan ditampilkan di halaman atau alert ketika integrasi aktif.</span></label>
                 <div className="support-field"><label htmlFor="support-message">Pesan untuk kreator (opsional)</label><textarea id="support-message" rows={3} value={message} onChange={(event) => setMessage(event.target.value)} maxLength={240} placeholder="Tulis pesan yang positif dan sopan…" /><small style={{color:"#8f88a2",fontSize:10}}>{message.length}/240 karakter</small></div>
                 <div className="support-field"><span className="support-label">Metode pembayaran</span><div className="support-methods">{methods.map((item) => <label key={item.id} className={method === item.id ? "support-method active" : "support-method"}><input type="radio" name="payment-method" value={item.id} checked={method === item.id} onChange={() => setMethod(item.id)} /><span><strong>{item.name}</strong><small>{item.detail}</small><em>Belum tersedia</em></span></label>)}</div></div>
                 <button className="support-submit" type="submit">Lanjutkan · {formatIDR(Number.isFinite(selectedAmount) && selectedAmount > 0 ? selectedAmount : amount)} ↗</button>
