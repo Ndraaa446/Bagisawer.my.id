@@ -31,6 +31,7 @@ const paymentMethods = [
   { name: "QRIS", detail: "QR pembayaran dinamis dari provider", category: "QR & instan" },
   { name: "Virtual Account", detail: "BCA, BNI, BRI, Mandiri, Permata, dan bank lain sesuai provider", category: "Transfer bank" },
   { name: "Transfer bank", detail: "Instruksi transfer dan rekonsiliasi otomatis bila didukung", category: "Transfer bank" },
+  { name: "Mobile/online banking", detail: "Pembayaran melalui kanal bank yang didukung provider", category: "Perbankan digital" },
   { name: "GoPay", detail: "E-wallet; ketersediaan mengikuti provider", category: "E-wallet" },
   { name: "DANA", detail: "E-wallet; ketersediaan mengikuti provider", category: "E-wallet" },
   { name: "OVO", detail: "E-wallet; ketersediaan mengikuti provider", category: "E-wallet" },
