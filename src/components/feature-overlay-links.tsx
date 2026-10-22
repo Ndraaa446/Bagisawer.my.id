@@ -37,7 +37,7 @@ export function FeatureOverlayLinks({ features }: Props) {
     for (const feature of features) {
       try {
         const url = window.localStorage.getItem(`bagisawer:overlay-url:${feature.slug}`);
-        if (url && /^https?:\\/\\//i.test(url)) saved[feature.slug] = url;
+        if (url && /^https?:\/\//i.test(url)) saved[feature.slug] = url;
       } catch { /* Clipboard/manual copy remains available during this session. */ }
     }
     if (Object.keys(saved).length) setUrls((previous) => ({ ...saved, ...previous }));
