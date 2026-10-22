@@ -483,3 +483,6 @@ body::before{
 @media(prefers-reduced-motion:reduce){
  .hamburger span{transition:none}
 }
+
+.hero-content{min-width:0}
+@media(max-width:760px){.hero-content{width:100%}}
