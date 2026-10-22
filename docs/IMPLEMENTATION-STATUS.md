@@ -30,7 +30,8 @@
 - Reviewed session checks on dashboard routes, server-side Supabase client cookie handling, and RLS ownership policies for creator profiles and stream settings.
 - Confirmed that overlay token rows and sandbox payment/ledger tables are not directly accessible to browser roles; service-role RPCs remain server-only.
 - Removed a duplicate password-recovery link from the login form.
-- Password-reset submission now verifies an active Supabase user session before changing the password and signs out after a successful reset.
+- Password-reset submission verifies an active Supabase user session before changing the password and signs out after a successful reset.
+- Login and registration normalize email input before calling Supabase Auth; expired/invalid auth callback links now show a useful message on the login page.
 - Login, registration, and password-recovery flows still require end-to-end verification with a dedicated test account; no such test has been run in this batch. The password-reset guard is a code-level hardening, not proof of a successful email recovery flow.
 
 ## Next work in point 4
