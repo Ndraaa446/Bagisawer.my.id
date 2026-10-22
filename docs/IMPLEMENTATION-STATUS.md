@@ -55,6 +55,8 @@ The preview's SSO restriction currently prevents the available external browser 
 - Added an authenticated feature-center route at `/dashboard/fitur` with category views for donations, payment methods, per-feature overlays, livestream interactions, and ecosystem modules.
 - The creator dashboard now links to the feature center.
 - Added a public creator support-page UI at `/[username]/dukung`, linked from the public creator profile. It supports amount selection, custom amount, optional name/message, anonymity toggle, and selecting a payment method in the UI.
+- Added public creator discovery at `/explore`, and public `/contact`, `/refund`, `/fees`, and `/status` screens. The contact form is display-only, refund/fees are explicitly drafts, and status is a manual development summary rather than live uptime monitoring.
+- Expanded `/features` to catalogue donation, OBS/overlay, interaction, dashboard/security modules and all currently mapped payment methods; the home footer now links to the public pages.
 - Listed QRIS, virtual account, bank transfer, GoPay, DANA, OVO, ShopeePay, LinkAja, debit/credit card, and retail payment methods. Every method is explicitly labelled unavailable because no external provider is configured.
 - Added a server-only `creator_feature_overlay_tokens` table with one revocable token per creator + feature. Browser roles have no table access; the API issues, rotates, lists, and revokes each feature token separately.
 - Added `/api/streaming/overlay-links` for per-feature token management and `/api/streaming/overlay-links/test` for a feature-specific test alert. The overlay resolver now checks feature tokens and filters pending events by feature type while preserving existing general OBS tokens.
