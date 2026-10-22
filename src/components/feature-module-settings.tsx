@@ -124,10 +124,16 @@ const fieldsByFeature: Record<string, Field[]> = {
 };
 
 export function FeatureModuleSettings({ featureKey, title }: { featureKey: string; title: string }) {
-  const fields = useMemo(() => fieldsByFeature[featureKey] ?? [
-    {key:"enabled",label:"Aktifkan modul",type:"toggle" as const,initial:false},
-    {key:"notes",label:"Catatan konfigurasi",type:"textarea" as const,placeholder:"Catatan kebutuhan modul"}
-  ], [featureKey]);
+  const fields = useMemo(() => {
+    const configured = fieldsByFeature[featureKey] ?? [
+      {key:"enabled",label:"Aktifkan modul",type:"toggle" as const,initial:false},
+      {key:"notes",label:"Catatan konfigurasi",type:"textarea" as const,placeholder:"Catatan kebutuhan modul"}
+    ];
+    return configured.some((field) => field.key === "minimum") ? configured : [
+      ...configured,
+      {key:"minimum",label:"Minimal donasi untuk fitur ini (Rp)",type:"number" as const,min:1000,max:100000000,initial:1000}
+    ];
+  }, [featureKey]);
   const [values, setValues] = useState<Record<string, string | number | boolean>>(() => Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""])));
   const [notice, setNotice] = useState("");
   const [featureEnabled, setFeatureEnabled] = useState(featureKey === "saweran");
@@ -140,7 +146,10 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Status aktivasi fitur gagal dimuat.");
       const item = (data.features ?? []).find((entry: { featureKey: string; enabled: boolean }) => entry.featureKey === featureKey);
-      if (!cancelled) setFeatureEnabled(Boolean(item?.enabled));
+      if (!cancelled) {
+        setFeatureEnabled(Boolean(item?.enabled));
+        if (item && Number.isSafeInteger(item.minimumAmount)) setValues((previous) => ({ ...previous, minimum: item.minimumAmount }));
+      }
     }).catch(() => { if (!cancelled) setNotice("Status aktivasi server belum dapat dimuat; periksa koneksi dan coba simpan kembali."); })
       .finally(() => { if (!cancelled) setActivationLoading(false); });
     try {
@@ -199,16 +208,16 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
     }
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(values));
-      const response = await fetch("/api/streaming/feature-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey, enabled: featureEnabled }), cache: "no-store" });
+      const response = await fetch("/api/streaming/feature-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey, enabled: featureEnabled, minimumAmount: Number(values.minimum ?? 1000) }), cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Status aktivasi fitur gagal disimpan.");
-      setNotice(featureEnabled ? "Fitur aktif dan akan ditampilkan di halaman dukungan publik kreator." : "Fitur dinonaktifkan dan tidak akan ditampilkan di halaman dukungan publik kreator.");
+      setNotice(`${featureEnabled ? "Fitur aktif" : "Fitur dinonaktifkan"}; minimal donasi ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(values.minimum ?? 1000))} tersimpan di server.`);
     } catch (error) { setNotice(error instanceof Error ? error.message : "Pengaturan gagal disimpan."); }
   }
 
   return (
     <form className="tool-card" onSubmit={submit} style={{display:"grid",gap:15}}>
-      <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Status aktivasi disimpan ke server akun kreator dan mengatur apakah pilihan ini muncul di halaman dukungan publik. Detail konfigurasi lainnya masih disimpan lokal di browser.</p></div>
+      <div><div className="tool-eyebrow">KONFIGURASI MODUL</div><h2 style={{fontSize:22,margin:"8px 0"}}>{title}</h2><p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7,margin:0}}>Status aktivasi disimpan ke server akun kreator dan mengatur apakah pilihan ini muncul di halaman dukungan publik. Minimal donasi dan status aktif/nonaktif disimpan di server akun kreator. Pengaturan lain masih disimpan lokal di browser.</p></div>
       <label style={{display:"flex",alignItems:"center",gap:10,padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="checkbox" checked={featureEnabled} disabled={featureKey === "saweran" || activationLoading} onChange={(event) => setFeatureEnabled(event.target.checked)} /><span><strong>{featureKey === "saweran" ? "Saweran utama selalu aktif" : "Tampilkan fitur ini di halaman dukungan"}</strong><small style={{display:"block",fontWeight:400,color:"var(--muted)",marginTop:4}}>{featureKey === "saweran" ? "Fitur dasar untuk menerima dukungan." : "Saat dinonaktifkan, pendukung tidak akan melihat pilihan ini."}</small></span></label>
       {fields.map((field) => (
         <label key={field.key} style={{display:"grid",gap:7,fontSize:12,fontWeight:700}}>
