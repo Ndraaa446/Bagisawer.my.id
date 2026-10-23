@@ -41,6 +41,24 @@ export default function CreatorSupportPage() {
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
+    const currentFeature = features.find((feature) => feature.key === selectedFeature);
+    if (!currentFeature) return;
+    const minimum = currentFeature.minimumAmount;
+    if (customAmount.trim()) {
+      const customValue = Number(customAmount);
+      if (Number.isFinite(customValue) && customValue > 0 && customValue < minimum) {
+        setCustomAmount(String(minimum));
+      }
+      return;
+    }
+    if (amount < minimum) {
+      const nextPreset = amounts.find((value) => value >= minimum);
+      if (nextPreset !== undefined) setAmount(nextPreset);
+      else setCustomAmount(String(minimum));
+    }
+  }, [features, selectedFeature, amount, customAmount]);
+
+  useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
