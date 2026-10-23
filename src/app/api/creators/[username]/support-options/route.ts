@@ -26,6 +26,9 @@ const FEATURE_LABELS: Record<(typeof FEATURE_KEYS)[number], { label: string; des
   gachaton: { label: "Gachaton", description: "Interaksi Gachaton", category: "interaksi" },
   bidcoin: { label: "Bidcoin", description: "Gunakan poin internal Bidcoin", category: "interaksi" }
 };
+function normalizeMinimumAmount(value: unknown): number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 1000 && value <= 100000000 && value % 1000 === 0 ? value : 1000;
+}
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0" } });
 }
@@ -53,6 +56,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ use
   enabled.add("saweran");
   return json({ features: FEATURE_KEYS.filter((key) => enabled.has(key)).map((key) => {
     const row = settingsByKey.get(key);
-    return { key, ...FEATURE_LABELS[key], minimumAmount: row?.minimum_amount ?? 1000 };
+    return { key, ...FEATURE_LABELS[key], minimumAmount: normalizeMinimumAmount(row?.minimum_amount) };
   }) });
 }
