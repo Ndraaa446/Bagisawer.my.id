@@ -38,7 +38,7 @@ For every feature, test in an authenticated QA creator account:
 
 ## Latest QA audit (2026-10-23)
 
-- Previous successful CI run [39892019288](https://github.com/Ndraaa446/Bagisawer.my.id/actions/runs/39892019288) passed unit/contract tests, ESLint, TypeScript typecheck and production build on the then-current commit. A fresh CI result for the latest commits is not yet confirmed; do not treat the previous run as verification of the latest code.
+- Latest verified code CI run [39909085510](https://github.com/Ndraaa446/Bagisawer.my.id/actions/runs/39909085510) passed unit/contract tests, ESLint, TypeScript typecheck and production build for commit `ceca675a08cb12c1b17947389dabc699e6da9cab`. This run validates the current application and test sources; subsequent documentation-only updates should still receive CI confirmation.
 
 - GitHub Actions run [39891600518](https://github.com/Ndraaa446/Bagisawer.my.id/actions/runs/39891600518) completed successfully for unit/contract tests, ESLint, TypeScript typecheck and production build on commit `aae9da1a05a5a8765c8b7efda35507a5f4c18a02`.
 - Read-only QA database inspection confirms 17 feature overlay-token rows and test-labelled `alert_events` for all 17 feature keys. These rows prove test-alert routing data exists, not that each feature's production behavior works end-to-end.
