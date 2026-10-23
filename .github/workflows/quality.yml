@@ -30,6 +30,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Unit and contract tests
+        run: npm test
       - name: Lint
         run: npm run lint
       - name: Typecheck
