@@ -151,8 +151,16 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
       if (!cancelled) {
         setFeatureEnabled(Boolean(item?.enabled));
         setOverlayEnabled(Boolean(item?.overlayEnabled));
-        if (item && Number.isSafeInteger(item.minimumAmount)) setValues((previous) => ({ ...previous, minimum: item.minimumAmount }));
-        if (item?.configuration && typeof item.configuration === "object" && !Array.isArray(item.configuration)) setValues((previous) => ({ ...previous, ...(item.configuration as Record<string, string | number | boolean>) }));
+        if (item?.configuration && typeof item.configuration === "object" && !Array.isArray(item.configuration)) {
+          setValues((previous) => ({
+            ...previous,
+            ...(item.configuration as Record<string, string | number | boolean>),
+            // The dedicated database column is canonical; stale legacy config must not overwrite it.
+            ...(Number.isSafeInteger(item.minimumAmount) ? { minimum: item.minimumAmount } : {})
+          }));
+        } else if (item && Number.isSafeInteger(item.minimumAmount)) {
+          setValues((previous) => ({ ...previous, minimum: item.minimumAmount }));
+        }
       }
     }).catch(() => { if (!cancelled) setNotice("Status aktivasi server belum dapat dimuat; periksa koneksi dan coba simpan kembali."); })
       .finally(() => { if (!cancelled) setActivationLoading(false); });
