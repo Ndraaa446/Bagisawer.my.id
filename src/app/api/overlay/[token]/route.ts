@@ -49,11 +49,18 @@ async function resolveToken(token: string) {
       .eq("feature_key", featureKey)
       .maybeSingle();
     if (featureSettingError || featureSetting?.enabled !== true || featureSetting?.overlay_enabled !== true) return null;
+    const configuration = featureSetting.configuration && typeof featureSetting.configuration === "object" && !Array.isArray(featureSetting.configuration)
+      ? featureSetting.configuration as Record<string, unknown>
+      : {};
+    // Mediashare and voice notes have a module-level switch in addition to the
+    // shared feature/overlay switches. Fail closed here too, so an old token
+    // cannot keep serving a module that its creator disabled in module settings.
+    if ((featureKey === "mediashare" || featureKey === "voicenote") && configuration.enabled === false) return null;
     return {
       admin,
       userId: featureToken.user_id as string,
       featureKey,
-      featureConfiguration: (featureSetting?.configuration ?? {}) as Record<string, unknown>,
+      featureConfiguration: configuration,
       eventTypes: featureEventTypes[featureKey] ?? [featureKey],
       excludeEventTypes: null as string[] | null
     };
@@ -81,13 +88,18 @@ async function resolveToken(token: string) {
   if (featureKeys.length) {
     const { data: featureSettings, error: featureSettingsError } = await admin
       .from("creator_feature_settings")
-      .select("feature_key")
+      .select("feature_key, configuration")
       .eq("user_id", userId)
       .eq("enabled", true)
       .eq("overlay_enabled", true)
       .in("feature_key", featureKeys);
     if (featureSettingsError) return null;
-    enabledFeatureKeys = (featureSettings ?? []).map((row) => row.feature_key as string);
+    enabledFeatureKeys = (featureSettings ?? []).filter((row) => {
+      const configuration = row.configuration && typeof row.configuration === "object" && !Array.isArray(row.configuration)
+        ? row.configuration as Record<string, unknown>
+        : {};
+      return !(["mediashare", "voicenote"].includes(row.feature_key) && configuration.enabled === false);
+    }).map((row) => row.feature_key as string);
   }
   const excludeEventTypes = Array.from(new Set(enabledFeatureKeys.flatMap((key) =>
     featureEventTypes[key] ?? [key]
@@ -146,8 +158,6 @@ export async function GET(_request: Request, context: Context) {
 
     if (eventError) return noStoreJson({ error: "Antrean alert belum dapat dibaca." }, 503);
     event = data;
-    // Anonymous support must not reveal a stored donor name through the overlay API,
-    // even if an upstream producer accidentally persisted the real name.
     if (event && featureKey === "anonim") {
       event = { ...event, donor_name: "Anonim" };
     }
