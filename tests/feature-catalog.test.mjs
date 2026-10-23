@@ -82,6 +82,24 @@ test("feature alert source is allowed only for trusted server-side producers", a
   assert.match(migration, /Client-side RLS remains restricted to isolated test events/);
 });
 
+test("verified payment event producer is server-only and delegates idempotency and feature gates to SQL", async () => {
+  const producer = await source("src/lib/streaming/verified-payment-events.ts");
+  const migration = await source("supabase/migrations/20261023110000_verified_feature_event_producer.sql");
+  assert.match(producer, /import "server-only"/);
+  assert.match(producer, /providerEventId/);
+  assert.match(producer, /enqueue_verified_feature_event/);
+  assert.match(producer, /Do not call it from a return URL, client action, sandbox simulation/);
+  assert.match(migration, /source_event_id/);
+  assert.match(migration, /create unique index if not exists alert_events_source_event_unique_idx/);
+  assert.match(migration, /on conflict \(user_id, source_event_id, event_type\)/);
+  assert.match(migration, /feature_or_overlay_disabled/);
+  assert.match(migration, /overlay_token_inactive/);
+  assert.match(migration, /below_minimum/);
+  assert.match(migration, /p_feature_key = 'anonim' then 'Anonim'/);
+  assert.match(migration, /revoke all on function public\.enqueue_verified_feature_event[\s\S]*from anon, authenticated/);
+  assert.match(migration, /to service_role/);
+});
+
 test("sandbox payment endpoints are explicitly separate from live payment providers", async () => {
   const sandbox = await source("src/app/api/payments/sandbox/route.ts");
   const paymentDocs = await source("docs/PAYMENT_FLOW.md");
