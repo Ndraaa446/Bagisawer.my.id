@@ -56,7 +56,7 @@ test("feature overlay tokens cannot be issued for disabled features or overlays"
 test("disabling a feature or overlay revokes its existing feature token", async () => {
   const settings = await source("src/app/api/streaming/feature-settings/route.ts");
   const links = await source("src/app/api/streaming/overlay-links/route.ts");
-  assert.match(settings, /if \(!body\.enabled \|\| !nextOverlayEnabled\)/);
+  assert.match(settings, /if \\(!nextEnabled \\|\\| !nextOverlayEnabled\\)/);
   assert.match(settings, /creator_feature_overlay_tokens/);
   assert.match(settings, /\.update\(\{ revoked_at: new Date\(\)\.toISOString\(\) \}\)/);
   assert.match(settings, /\.eq\("user_id", user\.id\)/);
