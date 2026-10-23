@@ -45,9 +45,10 @@ test("each feature has a dedicated overlay event mapping", async () => {
 
 test("feature overlay tokens cannot be issued for disabled features or overlays", async () => {
   const route = await source("src/app/api/streaming/overlay-links/route.ts");
-  assert.match(route, /select\("enabled, overlay_enabled"\)/);
+  assert.match(route, /select\("enabled, overlay_enabled, configuration"\)/);
   assert.match(route, /featureSetting\?\.enabled !== true/);
   assert.match(route, /featureSetting\.overlay_enabled !== true/);
+  assert.match(route, /moduleEnabled\(body\.featureKey, featureSetting\.configuration\)/);
   assert.ok(route.indexOf("featureSetting?.enabled !== true") < route.indexOf("randomBytes(32)"),
     "feature status must be checked before creating a token");
 });
@@ -68,6 +69,7 @@ test("feature test-alert endpoint validates the catalog and refuses disabled ove
   for (const key of FEATURE_KEYS) assert.ok(route.includes(`"${key}"`), `test endpoint missing ${key}`);
   assert.match(route, /featureSettings\?\.enabled !== true/);
   assert.match(route, /featureSettings\.overlay_enabled !== true/);
+  assert.match(route, /moduleEnabled\(body\.featureKey, featureSettings\.configuration\)/);
   assert.match(route, /enqueue_feature_test_alert/);
   assert.match(route, /rate_limited/);
 });
@@ -160,4 +162,21 @@ test("feature overlays fail closed when mediashare or voice-note module configur
   assert.match(route, /\(featureKey === "mediashare" \|\| featureKey === "voicenote"\) && configuration\.enabled === false/);
   assert.match(route, /select\("feature_key, configuration"\)/);
   assert.match(route, /return !\(\["mediashare", "voicenote"\]\.includes\(row\.feature_key\) && configuration\.enabled === false\)/);
+});
+
+
+test("overlay-link state and test alerts honor module switches and normalized minimum amounts", async () => {
+  const links = await source("src/app/api/streaming/overlay-links/route.ts");
+  const testRoute = await source("src/app/api/streaming/overlay-links/test/route.ts");
+  const featureSettings = await source("src/app/api/streaming/feature-settings/route.ts");
+  const supportOptions = await source("src/app/api/creators/[username]/support-options/route.ts");
+  const producer = await source("supabase/migrations/20261023110000_verified_feature_event_producer.sql");
+  assert.match(links, /function normalizeMinimumAmount\(value: unknown\)/);
+  assert.match(links, /minimumAmount: normalizeMinimumAmount\(setting\?\.minimum_amount\)/);
+  assert.match(links, /moduleEnabled\(featureKey, setting\.configuration\)/);
+  assert.match(testRoute, /moduleEnabled\(body\.featureKey, featureSettings\.configuration\)/);
+  assert.match(featureSettings, /value % 1000 !== 0/);
+  assert.match(supportOptions, /normalizeMinimumAmount\(row\?\.minimum_amount\)/);
+  assert.match(producer, /p_amount < coalesce\(v_minimum_amount, 1000\)/);
+  assert.match(producer, /configuration ->> 'enabled'/);
 });
