@@ -55,7 +55,8 @@ test("feature overlay tokens cannot be issued for disabled features or overlays"
 test("feature test-alert endpoint validates the catalog and refuses disabled overlays", async () => {
   const route = await source("src/app/api/streaming/overlay-links/test/route.ts");
   for (const key of FEATURE_KEYS) assert.ok(route.includes(`"${key}"`), `test endpoint missing ${key}`);
-  assert.match(route, /featureSettings\?\.overlay_enabled !== true/);
+  assert.match(route, /featureSettings\?\.enabled !== true/);
+  assert.match(route, /featureSettings\.overlay_enabled !== true/);
   assert.match(route, /enqueue_feature_test_alert/);
   assert.match(route, /rate_limited/);
 });
