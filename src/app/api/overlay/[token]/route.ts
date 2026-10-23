@@ -146,6 +146,11 @@ export async function GET(_request: Request, context: Context) {
 
     if (eventError) return noStoreJson({ error: "Antrean alert belum dapat dibaca." }, 503);
     event = data;
+    // Anonymous support must not reveal a stored donor name through the overlay API,
+    // even if an upstream producer accidentally persisted the real name.
+    if (event && featureKey === "anonim") {
+      event = { ...event, donor_name: "Anonim" };
+    }
   }
 
   return noStoreJson({
@@ -180,7 +185,8 @@ export async function POST(request: Request, context: Context) {
     .update({ status: "displayed", displayed_at: new Date().toISOString() }, { count: "exact" })
     .eq("id", body.eventId)
     .eq("user_id", resolved.userId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .gt("expires_at", new Date().toISOString());
   if (resolved.eventTypes) acknowledgeQuery = acknowledgeQuery.in("event_type", resolved.eventTypes);
   if (resolved.excludeEventTypes?.length) {
     acknowledgeQuery = acknowledgeQuery.not("event_type", "in", postgrestInList(resolved.excludeEventTypes));
