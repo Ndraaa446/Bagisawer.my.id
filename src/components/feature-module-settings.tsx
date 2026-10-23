@@ -218,7 +218,10 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Status aktivasi fitur gagal disimpan.");
       try { window.localStorage.setItem(storageKey, JSON.stringify(values)); } catch { /* Server remains the source of truth. */ }
-      setNotice(`${featureEnabled ? "Pilihan /dukung aktif" : "Pilihan /dukung nonaktif"}; overlay ${overlayEnabled ? "aktif" : "nonaktif"}; minimal donasi ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(values.minimum ?? 1000))} tersimpan di server.`);
+      // Reflect server-normalized state (e.g. a disabled module cannot keep an active overlay).
+      setFeatureEnabled(Boolean(data.enabled));
+      setOverlayEnabled(Boolean(data.overlayEnabled));
+      setNotice(`${data.enabled ? "Pilihan /dukung aktif" : "Pilihan /dukung nonaktif"}; overlay ${data.overlayEnabled ? "aktif" : "nonaktif"}; minimal donasi ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(data.minimumAmount ?? values.minimum ?? 1000))} tersimpan di server.`);
     } catch (error) { setNotice(error instanceof Error ? error.message : "Pengaturan gagal disimpan."); } finally { setSaving(false); }
   }
 
