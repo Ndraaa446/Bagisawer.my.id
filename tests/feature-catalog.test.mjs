@@ -137,3 +137,13 @@ test("overlay acknowledgement is scoped to owner, event type and unexpired pendi
   assert.match(route, /acknowledgeQuery = acknowledgeQuery\.in\("event_type", resolved\.eventTypes\)/);
 });
 
+
+test("feature module date and domain validation use real regex escapes", async () => {
+  const component = await source("src/components/feature-module-settings.tsx");
+  assert.match(component, /const match = \/\^\(\\d\{4\}\)-\(\\d\{2\}\)-\(\\d\{2\}\)\$\//,
+    "date validation must recognize YYYY-MM-DD digits");
+  assert.match(component, /value\.split\(\/\\r\?\\n\/\)/,
+    "domain validation must split on actual line breaks");
+  assert.match(component, /\[a-zA-Z0-9-\]\{0,61\}\[a-zA-Z0-9\]\)\?\\\.\)/,
+    "domain validation must recognize hostname dots");
+});
