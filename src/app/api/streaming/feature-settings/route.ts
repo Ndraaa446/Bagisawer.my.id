@@ -54,5 +54,19 @@ export async function PUT(request: Request) {
     user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: nextMinimumAmount, overlay_enabled: nextOverlayEnabled, configuration: body.configuration === undefined ? (existing?.configuration ?? {}) : body.configuration, updated_at: new Date().toISOString()
   }, { onConflict: "user_id,feature_key" });
   if (writeError) return json({ error: "Status aktivasi fitur gagal disimpan." }, 500);
-  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled, minimumAmount: nextMinimumAmount, overlayEnabled: nextOverlayEnabled });
+
+  // Disabling a feature or its overlay revokes its secret URL immediately.
+  // Re-enabling later requires the creator to issue a fresh URL deliberately.
+  if (!body.enabled || !nextOverlayEnabled) {
+    const { error: revokeError } = await admin.from("creator_feature_overlay_tokens")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("user_id", user.id)
+      .eq("feature_key", body.featureKey)
+      .is("revoked_at", null);
+    if (revokeError) {
+      return json({ error: "Fitur tersimpan, tetapi URL overlay lama gagal dicabut. Jangan gunakan URL tersebut; coba cabut ulang dari pengaturan overlay." }, 503);
+    }
+  }
+
+  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled, minimumAmount: nextMinimumAmount, overlayEnabled: nextOverlayEnabled, overlayRevoked: !body.enabled || !nextOverlayEnabled });
 }
