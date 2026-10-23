@@ -147,3 +147,9 @@ test("feature module date and domain validation use real regex escapes", async (
   assert.match(component, /\[a-zA-Z0-9-\]\{0,61\}\[a-zA-Z0-9\]\)\?\\\.\)/,
     "domain validation must recognize hostname dots");
 });
+
+test("feature module reset clearly states that restored values are not saved automatically", async () => {
+  const component = await source("src/components/feature-module-settings.tsx");
+  assert.match(component, />Reset formulir<\/button>/);
+  assert.match(component, /belum disimpan ke server\. Klik Simpan pengaturan/);
+});
