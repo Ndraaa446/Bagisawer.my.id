@@ -205,3 +205,10 @@ test("feature settings load canonical database minimum after legacy configuratio
   const component = await source("src/components/feature-module-settings.tsx");
   assert.match(component, /\.\.\.\(item\.configuration as Record<string, string \| number \| boolean>\),[\s\S]*Number\.isSafeInteger\(item\.minimumAmount\) \? \{ minimum: item\.minimumAmount \}/);
 });
+
+test("feature settings UI reflects normalized activation returned by the server", async () => {
+  const component = await source("src/components/feature-module-settings.tsx");
+  assert.match(component, /setFeatureEnabled\(Boolean\(data\.enabled\)\)/);
+  assert.match(component, /setOverlayEnabled\(Boolean\(data\.overlayEnabled\)\)/);
+  assert.match(component, /data\.minimumAmount \?\? values\.minimum/);
+});
