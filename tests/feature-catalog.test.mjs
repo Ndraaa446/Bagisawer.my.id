@@ -200,3 +200,8 @@ test("module-specific disable switch is reflected in dashboard state and revokes
   assert.match(route, /if \(!nextEnabled \|\| !nextOverlayEnabled\)/);
   assert.match(route, /overlayRevoked: !nextEnabled \|\| !nextOverlayEnabled/);
 });
+
+test("feature settings load canonical database minimum after legacy configuration values", async () => {
+  const component = await source("src/components/feature-module-settings.tsx");
+  assert.match(component, /\.\.\.\(item\.configuration as Record<string, string \| number \| boolean>\),[\s\S]*Number\.isSafeInteger\(item\.minimumAmount\) \? \{ minimum: item\.minimumAmount \}/);
+});
