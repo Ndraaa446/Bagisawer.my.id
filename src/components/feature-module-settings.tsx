@@ -234,7 +234,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
           {field.help && <small style={{fontSize:10,color:"var(--muted)",lineHeight:1.6}}>{field.help}</small>}
         </label>
       ))}
-      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button className="btn btn-primary" type="submit" disabled={activationLoading || saving}>{saving ? "Menyimpan…" : "Simpan pengaturan"}</button><button className="btn btn-ghost" type="button" onClick={() => { window.localStorage.removeItem(storageKey); setValues(Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""]))); setNotice("Pengaturan lokal dihapus dan nilai awal dipulihkan."); }}>Pulihkan nilai awal</button></div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button className="btn btn-primary" type="submit" disabled={activationLoading || saving}>{saving ? "Menyimpan…" : "Simpan pengaturan"}</button><button className="btn btn-ghost" type="button" onClick={() => { window.localStorage.removeItem(storageKey); setValues(Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""]))); setNotice("Nilai formulir dikembalikan ke awal; belum disimpan ke server. Klik Simpan pengaturan untuk menerapkan perubahan."); }}>Reset formulir</button></div>
       {notice && <p className="auth-message" role="status">{notice}</p>}
     </form>
   );
