@@ -100,6 +100,14 @@ test("verified payment event producer is server-only and delegates idempotency a
   assert.match(migration, /to service_role/);
 });
 
+test("anonymous support selection is bound to the anonymous feature before a future payment flow", async () => {
+  const supportPage = await source("src/app/[username]/dukung/page.tsx");
+  assert.match(supportPage, /setSelectedFeature\(anonymousEnabled \? "anonim" : "saweran"\)/);
+  assert.match(supportPage, /checked=\{selectedFeature === "anonim"\}/);
+  assert.match(supportPage, /disabled=\{selectedFeature === "anonim"\}/);
+  assert.match(supportPage, /if \(feature\.key === "anonim"\) setName\("\)\)/);
+});
+
 test("sandbox payment endpoints are explicitly separate from live payment providers", async () => {
   const sandbox = await source("src/app/api/payments/sandbox/route.ts");
   const paymentDocs = await source("docs/PAYMENT_FLOW.md");
