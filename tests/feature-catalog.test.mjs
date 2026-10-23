@@ -180,3 +180,12 @@ test("overlay-link state and test alerts honor module switches and normalized mi
   assert.match(producer, /p_amount < coalesce\(v_minimum_amount, 1000\)/);
   assert.match(producer, /configuration ->> 'enabled'/);
 });
+
+
+test("donation page adjusts the selected amount when the active feature minimum changes", async () => {
+  const page = await source("src/app/[username]/dukung/page.tsx");
+  assert.match(page, /const currentFeature = features\.find\(\(feature\) => feature\.key === selectedFeature\)/);
+  assert.match(page, /if \(amount < minimum\)/);
+  assert.match(page, /const nextPreset = amounts\.find\(\(value\) => value >= minimum\)/);
+  assert.match(page, /else setCustomAmount\(String\(minimum\)\)/);
+});
