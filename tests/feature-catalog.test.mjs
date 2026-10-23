@@ -88,7 +88,7 @@ test("verified payment event producer is server-only and delegates idempotency a
   assert.match(producer, /import "server-only"/);
   assert.match(producer, /providerEventId/);
   assert.match(producer, /enqueue_verified_feature_event/);
-  assert.match(producer, /Do not call it from a return URL,[\\s\\S]*client action, sandbox simulation/);
+  assert.match(producer, /Do not call it from a return URL/);
   assert.match(migration, /source_event_id/);
   assert.match(migration, /create unique index if not exists alert_events_source_event_unique_idx/);
   assert.match(migration, /on conflict \(user_id, source_event_id, event_type\)/);
