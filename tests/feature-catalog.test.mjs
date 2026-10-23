@@ -52,6 +52,17 @@ test("feature overlay tokens cannot be issued for disabled features or overlays"
     "feature status must be checked before creating a token");
 });
 
+test("disabling a feature or overlay revokes its existing feature token", async () => {
+  const settings = await source("src/app/api/streaming/feature-settings/route.ts");
+  const links = await source("src/app/api/streaming/overlay-links/route.ts");
+  assert.match(settings, /if \(!body\.enabled \|\| !nextOverlayEnabled\)/);
+  assert.match(settings, /creator_feature_overlay_tokens/);
+  assert.match(settings, /\.update\(\{ revoked_at: new Date\(\)\.toISOString\(\) \}\)/);
+  assert.match(settings, /\.eq\("user_id", user\.id\)/);
+  assert.match(settings, /\.eq\("feature_key", body\.featureKey\)/);
+  assert.match(links, /row && !row\.revoked_at && setting\?\.enabled === true && setting\?\.overlay_enabled === true/);
+});
+
 test("feature test-alert endpoint validates the catalog and refuses disabled overlays", async () => {
   const route = await source("src/app/api/streaming/overlay-links/test/route.ts");
   for (const key of FEATURE_KEYS) assert.ok(route.includes(`"${key}"`), `test endpoint missing ${key}`);
