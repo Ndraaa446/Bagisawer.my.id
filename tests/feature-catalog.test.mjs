@@ -100,6 +100,13 @@ test("verified payment event producer is server-only and delegates idempotency a
   assert.match(migration, /to service_role/);
 });
 
+test("feature overlay message length configuration is applied to visible alert text", async () => {
+  const overlayClient = await source("src/components/overlay-client.tsx");
+  assert.match(overlayClient, /const visibleMessage = activeAlert\?\.message \? activeAlert\.message\.slice/);
+  assert.match(overlayClient, /<p>\{visibleMessage\}<\/p>/);
+  assert.doesNotMatch(overlayClient, /<p>\{activeAlert\.message\}<\/p>/);
+});
+
 test("anonymous support selection is bound to the anonymous feature before a future payment flow", async () => {
   const supportPage = await source("src/app/[username]/dukung/page.tsx");
   assert.match(supportPage, /setSelectedFeature\(anonymousEnabled \? "anonim" : "saweran"\)/);
