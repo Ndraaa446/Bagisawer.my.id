@@ -105,7 +105,7 @@ test("anonymous support selection is bound to the anonymous feature before a fut
   assert.match(supportPage, /setSelectedFeature\(anonymousEnabled \? "anonim" : "saweran"\)/);
   assert.match(supportPage, /checked=\{selectedFeature === "anonim"\}/);
   assert.match(supportPage, /disabled=\{selectedFeature === "anonim"\}/);
-  assert.match(supportPage, /if \(feature\.key === "anonim"\) setName\("\)\)/);
+  assert.match(supportPage, /if \(feature\.key === "anonim"\) setName\(""\)/);
 });
 
 test("sandbox payment endpoints are explicitly separate from live payment providers", async () => {
