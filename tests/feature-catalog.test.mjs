@@ -43,6 +43,15 @@ test("each feature has a dedicated overlay event mapping", async () => {
   }
 });
 
+test("feature overlay tokens cannot be issued for disabled features or overlays", async () => {
+  const route = await source("src/app/api/streaming/overlay-links/route.ts");
+  assert.match(route, /select\("enabled, overlay_enabled"\)/);
+  assert.match(route, /featureSetting\?\.enabled !== true/);
+  assert.match(route, /featureSetting\.overlay_enabled !== true/);
+  assert.ok(route.indexOf("featureSetting?.enabled !== true") < route.indexOf("randomBytes(32)"),
+    "feature status must be checked before creating a token");
+});
+
 test("feature test-alert endpoint validates the catalog and refuses disabled overlays", async () => {
   const route = await source("src/app/api/streaming/overlay-links/test/route.ts");
   for (const key of FEATURE_KEYS) assert.ok(route.includes(`"${key}"`), `test endpoint missing ${key}`);
