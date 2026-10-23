@@ -87,6 +87,22 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch { return json({ error: "JSON permintaan tidak valid." }, 400); }
   if (!isFeatureKey(body.featureKey)) return json({ error: "Jenis overlay tidak dikenal." }, 400);
 
+  // Do not issue URLs that are guaranteed to fail closed at the overlay endpoint.
+  // Re-check ownership-scoped feature settings on the server immediately before token creation.
+  const { data: featureSetting, error: settingError } = await admin
+    .from("creator_feature_settings")
+    .select("enabled, overlay_enabled")
+    .eq("user_id", user.id)
+    .eq("feature_key", body.featureKey)
+    .maybeSingle();
+  if (settingError) return json({ error: "Status fitur belum dapat diperiksa." }, 503);
+  if (featureSetting?.enabled !== true) {
+    return json({ error: "Aktifkan fitur ini terlebih dahulu sebelum membuat URL overlay." }, 409);
+  }
+  if (featureSetting.overlay_enabled !== true) {
+    return json({ error: "Aktifkan overlay fitur ini terlebih dahulu sebelum membuat URL." }, 409);
+  }
+
   const token = randomBytes(32).toString("base64url");
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const { error } = await admin.from("creator_feature_overlay_tokens").upsert({
