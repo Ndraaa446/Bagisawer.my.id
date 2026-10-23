@@ -10,6 +10,12 @@ const FEATURE_KEYS = new Set([
   "bagpao", "gachaton", "bidcoin"
 ]);
 
+function moduleEnabled(featureKey: string, configuration: unknown): boolean {
+  if (featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
+  return (configuration as Record<string, unknown>).enabled !== false;
+}
+
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0" } });
 }
@@ -30,13 +36,14 @@ export async function POST(request: Request) {
 
   const { data: featureSettings, error: settingsError } = await admin
     .from("creator_feature_settings")
-    .select("enabled, overlay_enabled")
+    .select("enabled, overlay_enabled, configuration")
     .eq("user_id", user.id)
     .eq("feature_key", body.featureKey)
     .maybeSingle();
   if (settingsError) return json({ error: "Status aktivasi overlay belum dapat dibaca." }, 503);
   if (featureSettings?.enabled !== true) return json({ error: "Aktifkan fitur ini terlebih dahulu." }, 409);
   if (featureSettings.overlay_enabled !== true) return json({ error: "Aktifkan overlay fitur ini terlebih dahulu." }, 409);
+  if (!moduleEnabled(body.featureKey, featureSettings.configuration)) return json({ error: "Aktifkan modul fitur ini di pengaturannya terlebih dahulu." }, 409);
 
   const { data, error } = await admin.rpc("enqueue_feature_test_alert", {
     p_user_id: user.id,
