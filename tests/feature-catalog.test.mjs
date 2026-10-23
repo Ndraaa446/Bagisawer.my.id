@@ -153,3 +153,11 @@ test("feature module reset clearly states that restored values are not saved aut
   assert.match(component, />Reset formulir<\/button>/);
   assert.match(component, /belum disimpan ke server\. Klik Simpan pengaturan/);
 });
+
+
+test("feature overlays fail closed when mediashare or voice-note module configuration is disabled", async () => {
+  const route = await source("src/app/api/overlay/[token]/route.ts");
+  assert.match(route, /\(featureKey === "mediashare" \|\| featureKey === "voicenote"\) && configuration\.enabled === false/);
+  assert.match(route, /select\("feature_key, configuration"\)/);
+  assert.match(route, /return !\(\["mediashare", "voicenote"\]\.includes\(row\.feature_key\) && configuration\.enabled === false\)/);
+});
