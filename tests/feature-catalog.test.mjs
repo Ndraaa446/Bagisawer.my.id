@@ -95,7 +95,7 @@ test("verified payment event producer is server-only and delegates idempotency a
   assert.match(migration, /feature_or_overlay_disabled/);
   assert.match(migration, /overlay_token_inactive/);
   assert.match(migration, /below_minimum/);
-  assert.match(migration, /p_feature_key = 'anonim' then 'Anonim'/);
+  assert.match(migration, /when p_feature_key = 'anonim' then 'Anonim'/);
   assert.match(migration, /revoke all on function public\.enqueue_verified_feature_event[\s\S]*from anon, authenticated/);
   assert.match(migration, /to service_role/);
 });
