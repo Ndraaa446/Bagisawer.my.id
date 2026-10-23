@@ -12,6 +12,9 @@ type FeatureKey = typeof FEATURE_KEYS[number];
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0" } });
 }
+function normalizeMinimumAmount(value: unknown): number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 1000 && value <= 100000000 && value % 1000 === 0 ? value : 1000;
+}
 function isFeatureKey(value: unknown): value is FeatureKey {
   return typeof value === "string" && FEATURE_KEYS.includes(value as FeatureKey);
 }
@@ -26,7 +29,7 @@ export async function GET() {
   if (readError) return json({ error: "Pengaturan aktivasi fitur gagal dimuat." }, 503);
   const enabled = new Set((data ?? []).filter((row) => row.enabled).map((row) => row.feature_key));
   enabled.add("saweran");
-  return json({ features: FEATURE_KEYS.map((featureKey) => { const row = (data ?? []).find((item) => item.feature_key === featureKey); return { featureKey, enabled: enabled.has(featureKey), minimumAmount: row?.minimum_amount ?? 1000, overlayEnabled: row?.overlay_enabled ?? false, configuration: row?.configuration ?? {} }; }) });
+  return json({ features: FEATURE_KEYS.map((featureKey) => { const row = (data ?? []).find((item) => item.feature_key === featureKey); return { featureKey, enabled: enabled.has(featureKey), minimumAmount: normalizeMinimumAmount(row?.minimum_amount), overlayEnabled: enabled.has(featureKey) && Boolean(row?.overlay_enabled), configuration: row?.configuration ?? {} }; }) });
 }
 export async function PUT(request: Request) {
   const supabase = await createClient();
@@ -45,9 +48,11 @@ export async function PUT(request: Request) {
   }
   const { data: existing, error: existingError } = await admin.from("creator_feature_settings").select("enabled, minimum_amount, overlay_enabled, configuration").eq("user_id", user.id).eq("feature_key", body.featureKey).maybeSingle();
   if (existingError) return json({ error: "Pengaturan fitur sebelumnya gagal dibaca." }, 503);
+  const nextMinimumAmount = body.minimumAmount === undefined ? normalizeMinimumAmount(existing?.minimum_amount) : body.minimumAmount;
+  const nextOverlayEnabled = body.enabled && (body.overlayEnabled ?? Boolean(existing?.overlay_enabled));
   const { error: writeError } = await admin.from("creator_feature_settings").upsert({
-    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: body.minimumAmount ?? existing?.minimum_amount ?? 1000, overlay_enabled: body.overlayEnabled ?? existing?.overlay_enabled ?? false, configuration: body.configuration === undefined ? (existing?.configuration ?? {}) : body.configuration, updated_at: new Date().toISOString()
+    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: nextMinimumAmount, overlay_enabled: nextOverlayEnabled, configuration: body.configuration === undefined ? (existing?.configuration ?? {}) : body.configuration, updated_at: new Date().toISOString()
   }, { onConflict: "user_id,feature_key" });
   if (writeError) return json({ error: "Status aktivasi fitur gagal disimpan." }, 500);
-  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled, minimumAmount: body.minimumAmount ?? existing?.minimum_amount ?? 1000, overlayEnabled: body.overlayEnabled ?? existing?.overlay_enabled ?? false });
+  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled, minimumAmount: nextMinimumAmount, overlayEnabled: nextOverlayEnabled });
 }
