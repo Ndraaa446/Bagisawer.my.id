@@ -175,7 +175,7 @@ test("overlay-link state and test alerts honor module switches and normalized mi
   assert.match(links, /minimumAmount: normalizeMinimumAmount\(setting\?\.minimum_amount\)/);
   assert.match(links, /moduleEnabled\(featureKey, setting\.configuration\)/);
   assert.match(testRoute, /moduleEnabled\(body\.featureKey, featureSettings\.configuration\)/);
-  assert.match(featureSettings, /value % 1000 !== 0/);
+  assert.match(featureSettings, /Number\(body\.minimumAmount\) % 1000 !== 0/);
   assert.match(supportOptions, /normalizeMinimumAmount\(row\?\.minimum_amount\)/);
   assert.match(producer, /p_amount < coalesce\(v_minimum_amount, 1000\)/);
   assert.match(producer, /configuration ->> 'enabled'/);
