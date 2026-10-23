@@ -61,6 +61,16 @@ test("feature test-alert endpoint validates the catalog and refuses disabled ove
   assert.match(route, /rate_limited/);
 });
 
+test("feature alert source is allowed only for trusted server-side producers", async () => {
+  const migration = await source("supabase/migrations/20261023100000_allow_server_feature_alert_sources.sql");
+  const baseMigration = await source("supabase/migrations/20261022080022_overlay_tokens_and_test_alert_events.sql");
+  assert.match(migration, /source in \('test', 'feature'\)/);
+  assert.match(baseMigration, /event_type = 'test'/);
+  assert.match(baseMigration, /source = 'test'/);
+  assert.match(baseMigration, /grant select, insert on public\.alert_events to authenticated/);
+  assert.match(migration, /Client-side RLS remains restricted to isolated test events/);
+});
+
 test("sandbox payment endpoints are explicitly separate from live payment providers", async () => {
   const sandbox = await source("src/app/api/payments/sandbox/route.ts");
   const paymentDocs = await source("docs/PAYMENT_FLOW.md");
