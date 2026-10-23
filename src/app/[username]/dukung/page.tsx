@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { validateSupportAmount, validateSupportText } from "@/lib/support-validation";
 
 type Creator = { username: string; display_name: string; bio: string | null; avatar_url: string | null };
 type SupportFeature = { key: string; label: string; description: string; category: "donasi" | "interaksi"; minimumAmount: number };
@@ -78,11 +79,11 @@ export default function CreatorSupportPage() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = customAmount.trim() ? Number(customAmount) : amount;
-    if (!Number.isFinite(value) || value < minimumAmount || value > 100000000 || value % 1000 !== 0) {
+    if (!validateSupportAmount(value, minimumAmount)) {
       setNotice(`Nominal untuk ${selectedFeatureConfig?.label ?? "fitur ini"} harus minimal ${formatIDR(minimumAmount)}, maksimal Rp100.000.000, dan kelipatan Rp1.000.`);
       return;
     }
-    if (name.trim().length > 80 || message.trim().length > 240) {
+    if (!validateSupportText(name, message)) {
       setNotice("Nama maksimal 80 karakter dan pesan maksimal 240 karakter.");
       return;
     }
