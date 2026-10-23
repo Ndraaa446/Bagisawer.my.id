@@ -37,9 +37,22 @@ export async function GET(_request: Request, { params }: { params: Promise<{ use
     .select("user_id, username").eq("username", username.toLowerCase()).eq("is_public", true).maybeSingle();
   if (creatorError) return json({ error: "Pilihan dukungan belum dapat dimuat." }, 503);
   if (!creator) return json({ error: "Kreator tidak ditemukan." }, 404);
-  const { data, error } = await admin.from("creator_feature_settings").select("feature_key, enabled, minimum_amount").eq("user_id", creator.user_id);
+  const { data, error } = await admin.from("creator_feature_settings").select("feature_key, enabled, minimum_amount, configuration").eq("user_id", creator.user_id);
   if (error) return json({ error: "Pilihan dukungan belum dapat dimuat." }, 503);
-  const enabled = new Set((data ?? []).filter((row) => row.enabled).map((row) => row.feature_key));
+  const settingsByKey = new Map((data ?? []).map((row) => [row.feature_key, row]));
+  const enabled = new Set((data ?? []).filter((row) => {
+    if (!row.enabled) return false;
+    const configuration = row.configuration && typeof row.configuration === "object" && !Array.isArray(row.configuration)
+      ? row.configuration as Record<string, unknown>
+      : {};
+    // Some modules have a second, module-specific enable switch. Respect it
+    // as well as the global /dukung switch so disabled interactions cannot be selected.
+    if (["mediashare", "voicenote"].includes(row.feature_key) && configuration.enabled === false) return false;
+    return true;
+  }).map((row) => row.feature_key));
   enabled.add("saweran");
-  return json({ features: FEATURE_KEYS.filter((key) => enabled.has(key)).map((key) => { const row = (data ?? []).find((item) => item.feature_key === key); return { key, ...FEATURE_LABELS[key], minimumAmount: row?.minimum_amount ?? 1000 }; }) });
+  return json({ features: FEATURE_KEYS.filter((key) => enabled.has(key)).map((key) => {
+    const row = settingsByKey.get(key);
+    return { key, ...FEATURE_LABELS[key], minimumAmount: row?.minimum_amount ?? 1000 };
+  }) });
 }
