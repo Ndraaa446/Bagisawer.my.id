@@ -52,7 +52,9 @@ For every feature, test in an authenticated QA creator account:
 - [ ] Tokens are unique per creator + feature and only their SHA-256 hashes are stored server-side.
 - [ ] The browser can only view the raw token at creation time; local storage is treated as a secret-bearing convenience, not a secure vault.
 - [ ] Invalid, malformed, revoked and feature-disabled tokens fail closed.
-- [ ] Overlay feature A never returns or acknowledges feature B events.\n- [x] Anonymous feature overlay API redacts donor names defensively, even if an upstream event stored a real name (unit/contract test added; CI result pending).\n- [x] Acknowledgement query is constrained to owner, pending status, unexpired event, and the resolved feature event types (unit/contract test added; CI result pending).
+- [ ] Disabling a feature or its overlay revokes its existing feature token; re-enabling requires a newly generated URL. The settings API now performs this revocation and the overlay-link status API reports effective availability; regression test added, CI pending.
+- [ ] Overlay feature A never returns or acknowledges feature B events.\n- [x] Anonymous feature overlay API redacts donor names defensively, even if an upstream event stored a real name (regression test added; previously passed CI on an earlier commit; re-run pending for latest changes).
+- [x] Acknowledgement query is constrained to owner, pending status, unexpired event, and the resolved feature event types (regression test added; previously passed CI on an earlier commit; re-run pending for latest changes).
 - [ ] The general overlay excludes only events assigned to enabled feature overlays.
 - [ ] Test-alert endpoint checks feature overlay state, active token, global alert state and cooldown.
 - [ ] Duplicate acknowledgements cannot mark an unrelated event displayed.
