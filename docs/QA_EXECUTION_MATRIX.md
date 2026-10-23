@@ -19,7 +19,7 @@ For every feature, test in an authenticated QA creator account:
 | Feature key | Module-specific behavior to test | Current evidence |
 |---|---|---|
 | saweran | Minimum amount, name/message, test alert and general donation layout | Validation unit tests exist; E2E not verified |
-| anonim | Name is never exposed in public event/overlay | Not verified |
+| anonim | Name is never exposed in public event/overlay | API now redacts `donor_name` to `Anonim`; regression test added, CI/E2E pending |
 | pesan | Length and moderation/filter rules | Not verified |
 | target | Target CRUD, progress, milestone event | Not verified |
 | mediashare | URL allowlist, SSRF prevention, moderation, duration, playback | Not verified; do not accept public URLs for playback yet |
@@ -42,7 +42,7 @@ For every feature, test in an authenticated QA creator account:
 - [ ] Tokens are unique per creator + feature and only their SHA-256 hashes are stored server-side.
 - [ ] The browser can only view the raw token at creation time; local storage is treated as a secret-bearing convenience, not a secure vault.
 - [ ] Invalid, malformed, revoked and feature-disabled tokens fail closed.
-- [ ] Overlay feature A never returns or acknowledges feature B events.
+- [ ] Overlay feature A never returns or acknowledges feature B events.\n- [x] Anonymous feature overlay API redacts donor names defensively, even if an upstream event stored a real name (unit/contract test added; CI result pending).\n- [x] Acknowledgement query is constrained to owner, pending status, unexpired event, and the resolved feature event types (unit/contract test added; CI result pending).
 - [ ] The general overlay excludes only events assigned to enabled feature overlays.
 - [ ] Test-alert endpoint checks feature overlay state, active token, global alert state and cooldown.
 - [ ] Duplicate acknowledgements cannot mark an unrelated event displayed.
