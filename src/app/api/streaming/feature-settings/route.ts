@@ -18,6 +18,11 @@ function normalizeMinimumAmount(value: unknown): number {
 function isFeatureKey(value: unknown): value is FeatureKey {
   return typeof value === "string" && FEATURE_KEYS.includes(value as FeatureKey);
 }
+function moduleEnabled(featureKey: FeatureKey, configuration: unknown): boolean {
+  if (featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
+  return (configuration as Record<string, unknown>).enabled !== false;
+}
 export async function GET() {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -27,9 +32,20 @@ export async function GET() {
   const { data, error: readError } = await admin.from("creator_feature_settings")
     .select("feature_key, enabled, minimum_amount, overlay_enabled, configuration").eq("user_id", user.id);
   if (readError) return json({ error: "Pengaturan aktivasi fitur gagal dimuat." }, 503);
-  const enabled = new Set((data ?? []).filter((row) => row.enabled).map((row) => row.feature_key));
-  enabled.add("saweran");
-  return json({ features: FEATURE_KEYS.map((featureKey) => { const row = (data ?? []).find((item) => item.feature_key === featureKey); return { featureKey, enabled: enabled.has(featureKey), minimumAmount: normalizeMinimumAmount(row?.minimum_amount), overlayEnabled: enabled.has(featureKey) && Boolean(row?.overlay_enabled), configuration: row?.configuration ?? {} }; }) });
+  const settingsByKey = new Map((data ?? []).map((row) => [row.feature_key, row]));
+  return json({ features: FEATURE_KEYS.map((featureKey) => {
+    const row = settingsByKey.get(featureKey);
+    const active = featureKey === "saweran" || Boolean(row?.enabled);
+    const moduleActive = moduleEnabled(featureKey, row?.configuration);
+    const enabled = active && moduleActive;
+    return {
+      featureKey,
+      enabled,
+      minimumAmount: normalizeMinimumAmount(row?.minimum_amount),
+      overlayEnabled: enabled && Boolean(row?.overlay_enabled),
+      configuration: row?.configuration ?? {}
+    };
+  }) });
 }
 export async function PUT(request: Request) {
   const supabase = await createClient();
@@ -49,15 +65,18 @@ export async function PUT(request: Request) {
   const { data: existing, error: existingError } = await admin.from("creator_feature_settings").select("enabled, minimum_amount, overlay_enabled, configuration").eq("user_id", user.id).eq("feature_key", body.featureKey).maybeSingle();
   if (existingError) return json({ error: "Pengaturan fitur sebelumnya gagal dibaca." }, 503);
   const nextMinimumAmount = body.minimumAmount === undefined ? normalizeMinimumAmount(existing?.minimum_amount) : body.minimumAmount;
-  const nextOverlayEnabled = body.enabled && (body.overlayEnabled ?? Boolean(existing?.overlay_enabled));
+  const nextConfiguration = body.configuration === undefined ? (existing?.configuration ?? {}) : body.configuration;
+  const moduleActive = moduleEnabled(body.featureKey, nextConfiguration);
+  const nextOverlayEnabled = body.enabled && moduleActive && (body.overlayEnabled ?? Boolean(existing?.overlay_enabled));
+  const nextEnabled = body.enabled && moduleActive;
   const { error: writeError } = await admin.from("creator_feature_settings").upsert({
-    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: nextMinimumAmount, overlay_enabled: nextOverlayEnabled, configuration: body.configuration === undefined ? (existing?.configuration ?? {}) : body.configuration, updated_at: new Date().toISOString()
+    user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: nextMinimumAmount, overlay_enabled: nextOverlayEnabled, configuration: nextConfiguration, updated_at: new Date().toISOString()
   }, { onConflict: "user_id,feature_key" });
   if (writeError) return json({ error: "Status aktivasi fitur gagal disimpan." }, 500);
 
   // Disabling a feature or its overlay revokes its secret URL immediately.
   // Re-enabling later requires the creator to issue a fresh URL deliberately.
-  if (!body.enabled || !nextOverlayEnabled) {
+  if (!nextEnabled || !nextOverlayEnabled) {
     const { error: revokeError } = await admin.from("creator_feature_overlay_tokens")
       .update({ revoked_at: new Date().toISOString() })
       .eq("user_id", user.id)
@@ -68,5 +87,5 @@ export async function PUT(request: Request) {
     }
   }
 
-  return json({ ok: true, featureKey: body.featureKey, enabled: body.enabled, minimumAmount: nextMinimumAmount, overlayEnabled: nextOverlayEnabled, overlayRevoked: !body.enabled || !nextOverlayEnabled });
+  return json({ ok: true, featureKey: body.featureKey, enabled: nextEnabled, minimumAmount: nextMinimumAmount, overlayEnabled: nextOverlayEnabled, overlayRevoked: !nextEnabled || !nextOverlayEnabled });
 }
