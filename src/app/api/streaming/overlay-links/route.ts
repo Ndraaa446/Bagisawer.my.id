@@ -26,6 +26,16 @@ function isFeatureKey(value: unknown): value is FeatureKey {
   return typeof value === "string" && FEATURE_KEYS.includes(value as FeatureKey);
 }
 
+function normalizeMinimumAmount(value: unknown): number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 1000 && value <= 100000000 && value % 1000 === 0 ? value : 1000;
+}
+
+function moduleEnabled(featureKey: FeatureKey, configuration: unknown): boolean {
+  if (featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
+  return (configuration as Record<string, unknown>).enabled !== false;
+}
+
 function unavailable() {
   return json({ error: "Layanan overlay belum dikonfigurasi. Periksa secret Supabase khusus server." }, 503);
 }
@@ -55,7 +65,7 @@ export async function GET() {
   if (error) return json({ error: "Status overlay per fitur belum dapat dibaca." }, 503);
   const { data: settings, error: settingsError } = await admin
     .from("creator_feature_settings")
-    .select("feature_key, enabled, minimum_amount, overlay_enabled")
+    .select("feature_key, enabled, minimum_amount, overlay_enabled, configuration")
     .eq("user_id", user.id);
   if (settingsError) return json({ error: "Status aktivasi fitur belum dapat dibaca." }, 503);
   const byFeature = new Map<string, { feature_key: string; revoked_at: string | null; created_at: string | null }>();
@@ -69,11 +79,11 @@ export async function GET() {
         featureKey,
         // A stored, unrevoked token is not usable when its feature/overlay is off.
         // Report effective state rather than merely whether a token row exists.
-        active: Boolean(row && !row.revoked_at && setting?.enabled === true && setting?.overlay_enabled === true),
+        active: Boolean(row && !row.revoked_at && setting?.enabled === true && setting?.overlay_enabled === true && moduleEnabled(featureKey, setting.configuration)),
         createdAt: row?.created_at ?? null,
         supportEnabled: featureKey === "saweran" || Boolean(setting?.enabled),
-        overlayEnabled: Boolean(setting?.enabled && setting?.overlay_enabled),
-        minimumAmount: setting?.minimum_amount ?? 1000
+        overlayEnabled: Boolean(setting?.enabled && setting?.overlay_enabled && moduleEnabled(featureKey, setting?.configuration)),
+        minimumAmount: normalizeMinimumAmount(setting?.minimum_amount)
       };
     })
   });
@@ -93,7 +103,7 @@ export async function POST(request: Request) {
   // Re-check ownership-scoped feature settings on the server immediately before token creation.
   const { data: featureSetting, error: settingError } = await admin
     .from("creator_feature_settings")
-    .select("enabled, overlay_enabled")
+    .select("enabled, overlay_enabled, configuration")
     .eq("user_id", user.id)
     .eq("feature_key", body.featureKey)
     .maybeSingle();
@@ -103,6 +113,9 @@ export async function POST(request: Request) {
   }
   if (featureSetting.overlay_enabled !== true) {
     return json({ error: "Aktifkan overlay fitur ini terlebih dahulu sebelum membuat URL." }, 409);
+  }
+  if (!moduleEnabled(body.featureKey, featureSetting.configuration)) {
+    return json({ error: "Aktifkan modul fitur ini di pengaturannya sebelum membuat URL overlay." }, 409);
   }
 
   const token = randomBytes(32).toString("base64url");
