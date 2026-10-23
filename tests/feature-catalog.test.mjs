@@ -189,3 +189,14 @@ test("donation page adjusts the selected amount when the active feature minimum 
   assert.match(page, /const nextPreset = amounts\.find\(\(value\) => value >= minimum\)/);
   assert.match(page, /else setCustomAmount\(String\(minimum\)\)/);
 });
+
+test("module-specific disable switch is reflected in dashboard state and revokes overlay URLs", async () => {
+  const route = await source("src/app/api/streaming/feature-settings/route.ts");
+  assert.match(route, /function moduleEnabled\(featureKey: FeatureKey, configuration: unknown\)/);
+  assert.match(route, /const enabled = active && moduleActive/);
+  assert.match(route, /overlayEnabled: enabled && Boolean\(row\?\.overlay_enabled\)/);
+  assert.match(route, /const nextConfiguration = body\.configuration === undefined/);
+  assert.match(route, /const nextEnabled = body\.enabled && moduleActive/);
+  assert.match(route, /if \(!nextEnabled \|\| !nextOverlayEnabled\)/);
+  assert.match(route, /overlayRevoked: !nextEnabled \|\| !nextOverlayEnabled/);
+});
