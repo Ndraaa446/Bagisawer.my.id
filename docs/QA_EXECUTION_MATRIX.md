@@ -18,8 +18,8 @@ For every feature, test in an authenticated QA creator account:
 
 | Feature key | Module-specific behavior to test | Current evidence |
 |---|---|---|
-| saweran | Minimum amount, name/message, test alert and general donation layout | Validation unit tests exist; E2E not verified |
-| anonim | Name is never exposed in public event/overlay | API now redacts `donor_name` to `Anonim`; regression test added, CI/E2E pending |
+| saweran | Minimum amount, name/message, test alert and general donation layout | Test event exists in QA; no production event producer evidenced; E2E not verified |
+| anonim | Name is never exposed in public event/overlay | API redaction regression test passes in CI; QA has a test event; E2E privacy test pending |
 | pesan | Length and moderation/filter rules | Not verified |
 | target | Target CRUD, progress, milestone event | Not verified |
 | mediashare | URL allowlist, SSRF prevention, moderation, duration, playback | Not verified; do not accept public URLs for playback yet |
@@ -35,6 +35,16 @@ For every feature, test in an authenticated QA creator account:
 | bagpao | Product behavior/specification must be confirmed before functional acceptance | Blocked on specification |
 | gachaton | Deterministic/test-safe outcomes, auditability and legal/security review for prizes | Blocked on specification/review |
 | bidcoin | Internal-only balance/points, replay prevention and transaction history | Not verified; never represent as cash |
+
+## Latest QA audit (2026-10-23)
+
+- GitHub Actions run [39891600518](https://github.com/Ndraaa446/Bagisawer.my.id/actions/runs/39891600518) completed successfully for unit/contract tests, ESLint, TypeScript typecheck and production build on commit `aae9da1a05a5a8765c8b7efda35507a5f4c18a02`.
+- Read-only QA database inspection confirms 17 feature overlay-token rows and test-labelled `alert_events` for all 17 feature keys. These rows prove test-alert routing data exists, not that each feature's production behavior works end-to-end.
+- QA `alert_events` currently contains only `source='test'` rows, including 17 feature test event types and the general test event. No production donation/feature event producer was evidenced by this audit.
+- The database RPCs `enqueue_feature_test_alert` and `enqueue_test_alert` use transaction-scoped advisory locks and cooldown checks. Direct EXECUTE is denied to `anon` and `authenticated`; application routes call them server-side after authentication.
+- RLS inspection confirms direct client access is denied on feature overlay tokens and sandbox donations/payment events/ledger. `alert_events` insert policy only permits a creator's own pending `test` source event.
+- `process_sandbox_payment_event` validates sandbox environment, IDR amount/currency, event ID and payload hash; it locks the donation row, rejects amount/currency mismatch and reused idempotency keys with changed payload, and creates balanced test ledger entries for success/refund. This was a function-definition audit only; no new transaction was executed in this read-only pass.
+- Finding: the sandbox `simulate_success` path creates a test alert, not a feature-specific production donation event. Live payment/checkout/payout remain disabled. No provider webhook or real-money path was exercised.
 
 ## Overlay token and event-isolation tests
 
