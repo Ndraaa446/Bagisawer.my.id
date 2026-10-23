@@ -110,7 +110,7 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
 
       {currentFeature ? (
         <>
-          <div className="tool-section-head"><div><h2>Pengaturan {currentFeature.title}</h2><p>Rancangan layar untuk konfigurasi fitur. Penyimpanan pengaturan dan event produksi akan diaktifkan setelah backend modul siap.</p></div><Badge tone="amber">Konfigurasi belum tersimpan</Badge></div>
+          <div className="tool-section-head"><div><h2>Pengaturan {currentFeature.title}</h2><p>Rancangan layar untuk konfigurasi fitur. Pengaturan aktivasi, nominal minimum, konfigurasi dasar, dan status overlay tersimpan melalui API server. Producer event khusus dan pemrosesan produksi tetap belum lengkap.</p></div><Badge tone="amber">Event produksi belum lengkap</Badge></div>
           <FeatureModuleSettings key={currentFeature.slug} featureKey={currentFeature.slug} title={currentFeature.title} />
           {currentFeature.overlay ? <><div className="tool-section-head"><div><h2>Overlay khusus {currentFeature.title}</h2><p>Token dan URL ini hanya berlaku untuk fitur ini.</p></div></div><FeatureOverlayLinks features={[currentFeature]} /></> : <div className="tool-empty">Modul ini belum memerlukan overlay tersendiri atau integrasi overlay belum ditetapkan.</div>}
           <div className="tool-card-footer"><small>Kembali ke kategori {currentFeature.group.toLowerCase()}</small><Link href={currentFeature.group === "Donasi" ? "/dashboard/fitur/donasi" : currentFeature.group === "Interaksi" ? "/dashboard/fitur/interaksi" : "/dashboard/fitur/ekosistem"}>Kembali ↗</Link></div>
@@ -156,7 +156,7 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
         </>
       ) : current === "overlay" ? (
         <>
-          <div className="tool-section-head"><div><h2>Satu fitur, satu overlay</h2><p>Setiap modul di bawah mempunyai slot tautan sendiri. Token unik dan endpoint per jenis akan diaktifkan pada tahap backend; tautan contoh sengaja tidak dibuat seolah-olah sudah bisa dipakai di OBS.</p></div><Badge tone="amber">Token per fitur belum aktif</Badge></div>
+          <div className="tool-section-head"><div><h2>Satu fitur, satu overlay</h2><p>Setiap modul di bawah mempunyai slot tautan sendiri. Token unik per fitur sudah dikelola melalui API server. Pastikan fitur dan overlay diaktifkan sebelum mengetes URL di OBS.</p></div><Badge tone="green">API token per fitur tersedia</Badge></div>
           <FeatureOverlayLinks features={overlayTypes} />
         </>
       ) : current === "donasi" || current === "interaksi" || current === "ekosistem" ? (
@@ -171,7 +171,7 @@ export default async function CreatorFeatureCenter({ params }: { params: Promise
           <div className="tool-section-head"><div><h2>Metode pembayaran</h2><p>Daftar target integrasi; tidak ada provider aktif.</p></div><Link className="btn btn-ghost" href="/dashboard/fitur/pembayaran">Lihat semua metode ↗</Link></div>
           <div className="tool-methods">{paymentMethods.slice(0, 4).map((method) => <article className="tool-method" key={method.name}><span className="tool-method-mark">▦</span><div><strong>{method.name}</strong><p>{method.detail}</p><div style={{marginTop:8}}><Badge tone="amber">Belum aktif</Badge></div></div></article>)}</div>
           <div className="tool-section-head"><div><h2>Overlay khusus per fitur</h2><p>Jangan gunakan satu token bersama untuk semua jenis event.</p></div><Link className="btn btn-ghost" href="/dashboard/fitur/overlay">Kelola daftar overlay ↗</Link></div>
-          <div className="tool-empty">Token unik per fitur, rotasi/pencabutan, dan filter antrean dasar sudah tersedia. Modul penghasil event khusus seperti media share, voice note, lagu, target, dan polling masih harus diimplementasikan sebelum masing-masing overlay menerima event produksi.</div>
+          <div className="tool-empty">Token unik per fitur, rotasi/pencabutan, dan filter antrean dasar sudah tersedia. Alert uji per fitur juga tersedia; producer event khusus seperti media share, voice note, lagu, target, dan polling masih harus dilengkapi sebelum event produksi diterima.</div>
         </>
       )}
       <footer className="tool-footer">Bagisawer · UI dan katalog produk ini bukan bukti bahwa seluruh integrasi sudah aktif. Pembayaran nyata, pencairan, pemutaran media, dan integrasi eksternal tetap nonaktif sampai backend, keamanan, dan pengujian end-to-end selesai. <Link href="/dashboard/streaming">Pengaturan OBS yang sudah ada ↗</Link></footer>
