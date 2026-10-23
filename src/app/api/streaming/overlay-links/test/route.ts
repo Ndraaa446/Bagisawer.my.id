@@ -30,12 +30,13 @@ export async function POST(request: Request) {
 
   const { data: featureSettings, error: settingsError } = await admin
     .from("creator_feature_settings")
-    .select("overlay_enabled")
+    .select("enabled, overlay_enabled")
     .eq("user_id", user.id)
     .eq("feature_key", body.featureKey)
     .maybeSingle();
   if (settingsError) return json({ error: "Status aktivasi overlay belum dapat dibaca." }, 503);
-  if (featureSettings?.overlay_enabled !== true) return json({ error: "Aktifkan overlay fitur ini terlebih dahulu." }, 409);
+  if (featureSettings?.enabled !== true) return json({ error: "Aktifkan fitur ini terlebih dahulu." }, 409);
+  if (featureSettings.overlay_enabled !== true) return json({ error: "Aktifkan overlay fitur ini terlebih dahulu." }, 409);
 
   const { data, error } = await admin.rpc("enqueue_feature_test_alert", {
     p_user_id: user.id,
