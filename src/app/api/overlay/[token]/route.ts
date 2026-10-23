@@ -44,11 +44,11 @@ async function resolveToken(token: string) {
     const featureKey = featureToken.feature_key as string;
     const { data: featureSetting, error: featureSettingError } = await admin
       .from("creator_feature_settings")
-      .select("overlay_enabled, configuration")
+      .select("enabled, overlay_enabled, configuration")
       .eq("user_id", featureToken.user_id)
       .eq("feature_key", featureKey)
       .maybeSingle();
-    if (featureSettingError || featureSetting?.overlay_enabled !== true) return null;
+    if (featureSettingError || featureSetting?.enabled !== true || featureSetting?.overlay_enabled !== true) return null;
     return {
       admin,
       userId: featureToken.user_id as string,
@@ -76,8 +76,21 @@ async function resolveToken(token: string) {
     .eq("user_id", userId)
     .is("revoked_at", null);
   if (activeFeatureError) return null;
-  const excludeEventTypes = Array.from(new Set((activeFeatureTokens ?? []).flatMap((row) =>
-    featureEventTypes[row.feature_key as string] ?? [row.feature_key as string]
+  const featureKeys = Array.from(new Set((activeFeatureTokens ?? []).map((row) => row.feature_key as string)));
+  let enabledFeatureKeys: string[] = [];
+  if (featureKeys.length) {
+    const { data: featureSettings, error: featureSettingsError } = await admin
+      .from("creator_feature_settings")
+      .select("feature_key")
+      .eq("user_id", userId)
+      .eq("enabled", true)
+      .eq("overlay_enabled", true)
+      .in("feature_key", featureKeys);
+    if (featureSettingsError) return null;
+    enabledFeatureKeys = (featureSettings ?? []).map((row) => row.feature_key as string);
+  }
+  const excludeEventTypes = Array.from(new Set(enabledFeatureKeys.flatMap((key) =>
+    featureEventTypes[key] ?? [key]
   )));
   return { admin, userId, featureKey: "general", featureConfiguration: {} as Record<string, unknown>, eventTypes: null as string[] | null, excludeEventTypes };
 }
