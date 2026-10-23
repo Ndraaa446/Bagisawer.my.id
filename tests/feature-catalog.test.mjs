@@ -69,3 +69,17 @@ test("sandbox payment endpoints are explicitly separate from live payment provid
   assert.match(paymentDocs, /No external payment provider is configured/);
   assert.match(paymentDocs, /Never treat a browser return URL as proof of payment/);
 });
+test("anonymous feature overlay redacts donor names even if stored upstream", async () => {
+  const route = await source("src/app/api/overlay/[token]/route.ts");
+  assert.match(route, /featureKey === "anonim"/);
+  assert.match(route, /donor_name: "Anonim"/);
+});
+
+test("overlay acknowledgement is scoped to owner, event type and unexpired pending events", async () => {
+  const route = await source("src/app/api/overlay/[token]/route.ts");
+  assert.match(route, /\.eq\("user_id", resolved\.userId\)/);
+  assert.match(route, /\.eq\("status", "pending"\)/);
+  assert.match(route, /\.gt\("expires_at", new Date\(\)\.toISOString\(\)\)/);
+  assert.match(route, /acknowledgeQuery = acknowledgeQuery\.in\("event_type", resolved\.eventTypes\)/);
+});
+
