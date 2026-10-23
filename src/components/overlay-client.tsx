@@ -149,7 +149,7 @@ export function OverlayClient({ token }: { token: string }) {
           <div className="overlay-copy">
             <span className="overlay-test-label">{testLabel ? "UJI COBA · BUKAN DONASI" : title.toUpperCase()}</span>
             <strong>{activeAlert.donor_name}</strong>
-            <p>{activeAlert.message}</p>
+            <p>{visibleMessage}</p>
             <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
           </div>
         </section>
