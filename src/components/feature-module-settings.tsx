@@ -181,7 +181,7 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
         return;
       }
       if (field.key === "deadline" && typeof value === "string" && value.trim()) {
-        const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value.trim());
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
         const date = match ? new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00Z`) : null;
         if (!match || !date || date.toISOString().slice(0, 10) !== value.trim()) {
           setNotice("Tanggal target harus tanggal kalender valid dengan format YYYY-MM-DD.");
@@ -189,8 +189,8 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
         }
       }
       if (field.key === "domains" && typeof value === "string" && value.trim()) {
-        const domains = value.split(/\\r?\\n/).map((domain) => domain.trim()).filter(Boolean);
-        const validDomain = domains.every((domain) => /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$/.test(domain));
+        const domains = value.split(/\r?\n/).map((domain) => domain.trim()).filter(Boolean);
+        const validDomain = domains.every((domain) => /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/.test(domain));
         if (!validDomain || new Set(domains.map((domain) => domain.toLowerCase())).size !== domains.length) {
           setNotice("Daftar domain harus berisi hostname valid, satu per baris, tanpa duplikasi atau URL lengkap.");
           return;
