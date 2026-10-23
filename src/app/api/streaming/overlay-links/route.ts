@@ -67,10 +67,12 @@ export async function GET() {
       const setting = settingByFeature.get(featureKey);
       return {
         featureKey,
-        active: Boolean(row && !row.revoked_at),
+        // A stored, unrevoked token is not usable when its feature/overlay is off.
+        // Report effective state rather than merely whether a token row exists.
+        active: Boolean(row && !row.revoked_at && setting?.enabled === true && setting?.overlay_enabled === true),
         createdAt: row?.created_at ?? null,
         supportEnabled: featureKey === "saweran" || Boolean(setting?.enabled),
-        overlayEnabled: Boolean(setting?.overlay_enabled),
+        overlayEnabled: Boolean(setting?.enabled && setting?.overlay_enabled),
         minimumAmount: setting?.minimum_amount ?? 1000
       };
     })
