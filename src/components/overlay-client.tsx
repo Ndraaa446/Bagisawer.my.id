@@ -98,19 +98,20 @@ export function OverlayClient({ token }: { token: string }) {
     try {
       // A short built-in chime means the overlay has sound even before a custom
       // sound library is configured. It respects the creator's sound toggle.
-      context = new window.AudioContext();
-      const startAt = context.currentTime;
+      const audioContext = new window.AudioContext();
+      context = audioContext;
+      const startAt = audioContext.currentTime;
       [660, 880].forEach((frequency, index) => {
         const start = startAt + index * 0.11;
-        const oscillator = context!.createOscillator();
-        const gain = context!.createGain();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
         oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(frequency, start);
         gain.gain.setValueAtTime(0.0001, start);
         gain.gain.exponentialRampToValueAtTime(0.07, start + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.19);
         oscillator.connect(gain);
-        gain.connect(context!.destination);
+        gain.connect(audioContext.destination);
         oscillator.start(start);
         oscillator.stop(start + 0.2);
       });
