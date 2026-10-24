@@ -159,11 +159,11 @@ test("feature module reset clearly states that restored values are not saved aut
 
 test("feature overlays fail closed when anonymous, mediashare, or voice-note module configuration is disabled", async () => {
   const route = await source("src/app/api/overlay/[token]/route.ts");
-  assert.match(route, /function moduleEnabled\\(featureKey: string, configuration: unknown\\)/);
-  assert.match(route, /featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"/);
-  assert.match(route, /if \\(!moduleEnabled\\(featureKey, configuration\\)\\) return null/);
-  assert.match(route, /select\\("feature_key, configuration"\\)/);
-  assert.match(route, /return moduleEnabled\\(row\\.feature_key as string, configuration\\)/);
+  assert.ok(route.includes("function moduleEnabled(featureKey: string, configuration: unknown)"));
+  assert.ok(route.includes('featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"'));
+  assert.ok(route.includes("if (!moduleEnabled(featureKey, configuration)) return null"));
+  assert.ok(route.includes('select("feature_key, configuration")'));
+  assert.ok(route.includes("return moduleEnabled(row.feature_key as string, configuration)");
 
 });
 
