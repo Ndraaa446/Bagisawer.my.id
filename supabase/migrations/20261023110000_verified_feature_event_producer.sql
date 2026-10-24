@@ -78,7 +78,7 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'feature_or_overlay_disabled');
   end if;
 
-  if p_feature_key in ('mediashare', 'voicenote')
+  if p_feature_key in ('anonim', 'mediashare', 'voicenote')
      and coalesce(v_configuration ->> 'enabled', 'true') = 'false' then
     return jsonb_build_object('ok', false, 'reason', 'feature_or_overlay_disabled');
   end if;
