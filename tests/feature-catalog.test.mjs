@@ -163,7 +163,7 @@ test("feature overlays fail closed when anonymous, mediashare, or voice-note mod
   assert.ok(route.includes('featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"'));
   assert.ok(route.includes("if (!moduleEnabled(featureKey, configuration)) return null"));
   assert.ok(route.includes('select("feature_key, configuration")'));
-  assert.ok(route.includes("return moduleEnabled(row.feature_key as string, configuration)");
+  assert.ok(route.includes("return moduleEnabled(row.feature_key as string, configuration)"));
 
 });
 
