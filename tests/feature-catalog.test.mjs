@@ -19,14 +19,14 @@ function extractQuotedFeatureKeys(text) {
   return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]);
 }
 
-test("public feature settings and overlay-link APIs expose the same 17-feature catalog", async () => {
+test("settings support ecosystem modules while public donation and overlay APIs stay on the 17-feature catalog", async () => {
   const [settings, links, supportOptions] = await Promise.all([
     source("src/app/api/streaming/feature-settings/route.ts"),
     source("src/app/api/streaming/overlay-links/route.ts"),
     source("src/app/api/creators/[username]/support-options/route.ts")
   ]);
 
-  assert.deepEqual(extractQuotedFeatureKeys(settings), FEATURE_KEYS);
+  assert.deepEqual(extractQuotedFeatureKeys(settings), [...FEATURE_KEYS, "store", "notifikasi", "kompetisi"]);
   assert.deepEqual(extractQuotedFeatureKeys(links), FEATURE_KEYS);
   assert.deepEqual(extractQuotedFeatureKeys(supportOptions), FEATURE_KEYS);
 });
@@ -194,7 +194,7 @@ test("module-specific disable switch is reflected in dashboard state and revokes
   const route = await source("src/app/api/streaming/feature-settings/route.ts");
   assert.match(route, /function moduleEnabled\(featureKey: FeatureKey, configuration: unknown\)/);
   assert.match(route, /const enabled = active && moduleActive/);
-  assert.match(route, /overlayEnabled: enabled && Boolean\(row\?\.overlay_enabled\)/);
+  assert.match(route, /overlayEnabled: OVERLAY_FEATURE_KEYS\.has\(featureKey\) && enabled && Boolean\(row\?\.overlay_enabled\)/);
   assert.match(route, /const nextConfiguration = body\.configuration === undefined/);
   assert.match(route, /const nextEnabled = body\.enabled && moduleActive/);
   assert.match(route, /if \(!nextEnabled \|\| !nextOverlayEnabled\)/);
