@@ -25,7 +25,7 @@ function isFeatureKey(value: unknown): value is FeatureKey {
   return typeof value === "string" && FEATURE_KEYS.includes(value as FeatureKey);
 }
 function moduleEnabled(featureKey: FeatureKey, configuration: unknown): boolean {
-  if (featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote") return true;
   if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
   return (configuration as Record<string, unknown>).enabled !== false;
 }
