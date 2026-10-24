@@ -239,6 +239,14 @@ test("overlay resolver rejects inactive feature tokens and isolates event acknow
 });
 
 
+test("anonymous module configuration is enforced consistently by overlay token APIs", async () => {
+  const route = await source("src/app/api/streaming/overlay-links/route.ts");
+  const settings = await source("src/app/api/streaming/feature-settings/route.ts");
+  assert.match(route, /featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"/);
+  assert.match(route, /supportEnabled: featureKey === "saweran" \|\| Boolean\(setting\?\.enabled && moduleEnabled\(featureKey, setting\.configuration\)\)/);
+  assert.match(settings, /featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"/);
+});
+
 test("anonymous support module switch is honored by public support options and preflight", async () => {
   const [settings, options, preflight, moduleSettings] = await Promise.all([
     source("src/app/api/streaming/feature-settings/route.ts"),
