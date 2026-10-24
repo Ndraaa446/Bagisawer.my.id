@@ -50,7 +50,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ use
       : {};
     // Some modules have a second, module-specific enable switch. Respect it
     // as well as the global /dukung switch so disabled interactions cannot be selected.
-    if (["mediashare", "voicenote"].includes(row.feature_key) && configuration.enabled === false) return false;
+    if (["anonim", "mediashare", "voicenote"].includes(row.feature_key) && configuration.enabled === false) return false;
     return true;
   }).map((row) => row.feature_key));
   enabled.add("saweran");
