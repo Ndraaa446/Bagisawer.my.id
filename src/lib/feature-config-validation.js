@@ -16,6 +16,9 @@ const CONFIG_FIELDS = {
   bagpao: { mode: "string", notes: "string" },
   gachaton: { mode: "string", limit: "number", history: "boolean" },
   bidcoin: { label: "string", dailyLimit: "number", rules: "string" },
+  store: { supplier: "string", limit: "number", refund: "number" },
+  notifikasi: { inApp: "boolean", email: "boolean", events: "string" },
+  kompetisi: { title: "string", period: "string", scoring: "string" },
 };
 
 const NUMBER_LIMITS = {
@@ -31,6 +34,7 @@ const NUMBER_LIMITS = {
   volume: [0, 100],
   cooldown: [1, 600],
   dailyLimit: [0, 100000],
+  refund: [0, 90],
 };
 
 const STRING_LIMITS = {
@@ -54,6 +58,11 @@ const STRING_LIMITS = {
   notes: 2000,
   label: 80,
   rules: 2000,
+  supplier: 100,
+  events: 1000,
+  title: 160,
+  scoring: 2000,
+  period: 200,
 };
 
 function isValidDateOnly(value) {
