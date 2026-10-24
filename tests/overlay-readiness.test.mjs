@@ -85,3 +85,15 @@ test("creator feature settings have an explicit browser-role deny policy", async
   assert.match(migration, /using \(false\)/);
   assert.match(migration, /with check \(false\)/);
 });
+
+
+test("database test-alert RPC rechecks feature, overlay, module and token state atomically", async () => {
+  const migration = await source("supabase/migrations/20261024130000_atomic_feature_overlay_test_gate.sql");
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /from public\.creator_feature_settings/);
+  assert.match(migration, /v_feature_enabled is distinct from true or v_overlay_enabled is distinct from true/);
+  assert.match(migration, /p_feature_key in \('anonim', 'mediashare', 'voicenote'\)/);
+  assert.match(migration, /from public\.creator_feature_overlay_tokens/);
+  assert.match(migration, /grant execute on function public\.enqueue_feature_test_alert\(uuid, text\) to service_role/);
+  assert.match(migration, /revoke all on function public\.enqueue_feature_test_alert\(uuid, text\) from anon, authenticated/);
+});
