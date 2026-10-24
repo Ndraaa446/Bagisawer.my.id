@@ -92,6 +92,40 @@ export function OverlayClient({ token }: { token: string }) {
   }, [token]);
 
   useEffect(() => {
+    if (!activeAlert || !settings.sound_enabled) return;
+    let context: AudioContext | null = null;
+
+    try {
+      // A short built-in chime means the overlay has sound even before a custom
+      // sound library is configured. It respects the creator's sound toggle.
+      context = new window.AudioContext();
+      const startAt = context.currentTime;
+      [660, 880].forEach((frequency, index) => {
+        const start = startAt + index * 0.11;
+        const oscillator = context!.createOscillator();
+        const gain = context!.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.07, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.19);
+        oscillator.connect(gain);
+        gain.connect(context!.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.2);
+      });
+    } catch {
+      // Browser audio can be unavailable or blocked; alerts must still display.
+      if (context) void context.close().catch(() => undefined);
+      context = null;
+    }
+
+    return () => {
+      if (context) void context.close().catch(() => undefined);
+    };
+  }, [activeAlert?.id, settings.sound_enabled]);
+
+  useEffect(() => {
     if (!activeAlert) return;
     const event = activeAlert;
     const timer = window.setTimeout(async () => {
