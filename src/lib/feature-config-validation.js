@@ -1,0 +1,108 @@
+const CONFIG_FIELDS = {
+  saweran: { enabled: "boolean", minimum: "number", suggested: "string", anonymous: "boolean", messageLimit: "number" },
+  anonim: { enabled: "boolean", display: "string", ranking: "boolean" },
+  pesan: { limit: "number", moderation: "boolean", blocked: "string" },
+  target: { name: "string", amount: "number", deadline: "string", style: "string" },
+  mediashare: { enabled: "boolean", duration: "number", domains: "string", review: "boolean" },
+  voicenote: { enabled: "boolean", duration: "number", size: "number", approval: "boolean" },
+  lagu: { provider: "string", limit: "number", blocked: "string" },
+  qris: { target: "string", caption: "string", showUsername: "boolean" },
+  leaderboard: { period: "string", limit: "number", hideAnonymous: "boolean" },
+  subathon: { initial: "number", perAmount: "number", cap: "number" },
+  "running-text": { speed: "string", duration: "number", limit: "number", moderation: "boolean" },
+  soundboard: { volume: "number", cooldown: "number", triggers: "string" },
+  polling: { question: "string", options: "string", duration: "number", oneVote: "boolean" },
+  "vip-queue": { policy: "string", limit: "number", review: "boolean" },
+  bagpao: { mode: "string", notes: "string" },
+  gachaton: { mode: "string", limit: "number", history: "boolean" },
+  bidcoin: { label: "string", dailyLimit: "number", rules: "string" },
+};
+
+const NUMBER_LIMITS = {
+  minimum: [1000, 100000000],
+  messageLimit: [0, 500],
+  limit: [1, 500],
+  amount: [1000, 1000000000],
+  duration: [1, 1440],
+  size: [1, 25],
+  initial: [1, 1440],
+  perAmount: [0, 3600],
+  cap: [1, 10080],
+  volume: [0, 100],
+  cooldown: [1, 600],
+  dailyLimit: [0, 100000],
+};
+
+const STRING_LIMITS = {
+  suggested: 500,
+  display: 80,
+  blocked: 2000,
+  name: 120,
+  deadline: 10,
+  style: 40,
+  domains: 2000,
+  provider: 100,
+  target: 100,
+  caption: 200,
+  period: 40,
+  speed: 20,
+  triggers: 2000,
+  question: 300,
+  options: 2000,
+  policy: 100,
+  mode: 100,
+  notes: 2000,
+  label: 80,
+  rules: 2000,
+};
+
+function isValidDateOnly(value) {
+  if (!value) return true;
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00Z");
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}
+
+function isValidDomainList(value) {
+  if (!value.trim()) return true;
+  const domains = value.split(/\\r?\\n/).map((item) => item.trim()).filter(Boolean);
+  const valid = domains.every((domain) => /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$/.test(domain));
+  return valid && new Set(domains.map((domain) => domain.toLowerCase())).size === domains.length;
+}
+
+function isValidSuggestedAmounts(value) {
+  if (!value.trim()) return true;
+  const amounts = value.split(",").map((item) => item.trim());
+  return amounts.length <= 12 && amounts.every((item) => {
+    const amount = Number(item);
+    return Number.isSafeInteger(amount) && amount >= 1000 && amount <= 100000000 && amount % 1000 === 0;
+  });
+}
+
+/** Validate persisted creator module settings against the fields actually supported by each module. */
+export function validateFeatureConfiguration(featureKey, configuration) {
+  const schema = CONFIG_FIELDS[featureKey];
+  if (!schema || !configuration || typeof configuration !== "object" || Array.isArray(configuration)) return false;
+  const entries = Object.entries(configuration);
+  if (entries.length > 100 || JSON.stringify(configuration).length > 20000) return false;
+
+  for (const [key, value] of entries) {
+    const expectedType = schema[key];
+    if (!expectedType) return false;
+    if (expectedType === "boolean") {
+      if (typeof value !== "boolean") return false;
+      continue;
+    }
+    if (expectedType === "number") {
+      if (typeof value !== "number" || !Number.isSafeInteger(value)) return false;
+      const bounds = NUMBER_LIMITS[key];
+      if (bounds && (value < bounds[0] || value > bounds[1])) return false;
+      continue;
+    }
+    if (typeof value !== "string" || value.length > (STRING_LIMITS[key] ?? 2000)) return false;
+    if (key === "deadline" && !isValidDateOnly(value.trim())) return false;
+    if (key === "domains" && !isValidDomainList(value)) return false;
+    if (key === "suggested" && !isValidSuggestedAmounts(value)) return false;
+  }
+  return true;
+}
