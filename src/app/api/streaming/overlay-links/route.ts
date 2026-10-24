@@ -31,7 +31,7 @@ function normalizeMinimumAmount(value: unknown): number {
 }
 
 function moduleEnabled(featureKey: FeatureKey, configuration: unknown): boolean {
-  if (featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote") return true;
   if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
   return (configuration as Record<string, unknown>).enabled !== false;
 }
@@ -81,7 +81,7 @@ export async function GET() {
         // Report effective state rather than merely whether a token row exists.
         active: Boolean(row && !row.revoked_at && setting?.enabled === true && setting?.overlay_enabled === true && moduleEnabled(featureKey, setting.configuration)),
         createdAt: row?.created_at ?? null,
-        supportEnabled: featureKey === "saweran" || Boolean(setting?.enabled),
+        supportEnabled: featureKey === "saweran" || Boolean(setting?.enabled && moduleEnabled(featureKey, setting.configuration)),
         overlayEnabled: Boolean(setting?.enabled && setting?.overlay_enabled && moduleEnabled(featureKey, setting?.configuration)),
         minimumAmount: normalizeMinimumAmount(setting?.minimum_amount)
       };
