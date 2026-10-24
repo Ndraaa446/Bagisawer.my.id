@@ -10,6 +10,11 @@ const FEATURE_KEYS = [
   "bagpao", "gachaton", "bidcoin", "store", "notifikasi", "kompetisi"
 ] as const;
 type FeatureKey = typeof FEATURE_KEYS[number];
+const OVERLAY_FEATURE_KEYS = new Set<FeatureKey>([
+  "saweran", "anonim", "pesan", "target", "mediashare", "voicenote", "lagu", "qris",
+  "leaderboard", "subathon", "running-text", "soundboard", "polling", "vip-queue",
+  "bagpao", "gachaton", "bidcoin"
+]);
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0" } });
 }
@@ -43,7 +48,7 @@ export async function GET() {
       featureKey,
       enabled,
       minimumAmount: normalizeMinimumAmount(row?.minimum_amount),
-      overlayEnabled: enabled && Boolean(row?.overlay_enabled),
+      overlayEnabled: OVERLAY_FEATURE_KEYS.has(featureKey) && enabled && Boolean(row?.overlay_enabled),
       configuration: row?.configuration ?? {}
     };
   }) });
@@ -68,7 +73,7 @@ export async function PUT(request: Request) {
   const nextMinimumAmount = body.minimumAmount === undefined ? normalizeMinimumAmount(existing?.minimum_amount) : body.minimumAmount;
   const nextConfiguration = body.configuration === undefined ? (existing?.configuration ?? {}) : body.configuration;
   const moduleActive = moduleEnabled(body.featureKey, nextConfiguration);
-  const nextOverlayEnabled = body.enabled && moduleActive && (body.overlayEnabled ?? Boolean(existing?.overlay_enabled));
+  const nextOverlayEnabled = OVERLAY_FEATURE_KEYS.has(body.featureKey) && body.enabled && moduleActive && (body.overlayEnabled ?? Boolean(existing?.overlay_enabled));
   const nextEnabled = body.enabled && moduleActive;
   const { error: writeError } = await admin.from("creator_feature_settings").upsert({
     user_id: user.id, feature_key: body.featureKey, enabled: body.enabled, minimum_amount: nextMinimumAmount, overlay_enabled: nextOverlayEnabled, configuration: nextConfiguration, updated_at: new Date().toISOString()
