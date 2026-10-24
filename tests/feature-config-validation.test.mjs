@@ -43,3 +43,13 @@ test("accepts saved settings for non-payment ecosystem modules", () => {
   assert.equal(validateFeatureConfiguration("notifikasi", { inApp: true, email: false, events: "Pembayaran, keamanan" }), true);
   assert.equal(validateFeatureConfiguration("kompetisi", { title: "Event komunitas", period: "November", scoring: "Aturan transparan" }), true);
 });
+
+
+test("enforces per-feature numeric ranges rather than a shared generic limit", () => {
+  assert.equal(validateFeatureConfiguration("leaderboard", { limit: 101 }), false);
+  assert.equal(validateFeatureConfiguration("leaderboard", { limit: 3 }), true);
+  assert.equal(validateFeatureConfiguration("running-text", { duration: 61 }), false);
+  assert.equal(validateFeatureConfiguration("running-text", { duration: 12, limit: 120 }), true);
+  assert.equal(validateFeatureConfiguration("voicenote", { duration: 181 }), false);
+  assert.equal(validateFeatureConfiguration("store", { limit: 501 }), false);
+});
