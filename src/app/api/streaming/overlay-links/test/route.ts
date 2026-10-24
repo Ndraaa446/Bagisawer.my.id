@@ -11,7 +11,7 @@ const FEATURE_KEYS = new Set([
 ]);
 
 function moduleEnabled(featureKey: string, configuration: unknown): boolean {
-  if (featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote") return true;
   if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
   return (configuration as Record<string, unknown>).enabled !== false;
 }
