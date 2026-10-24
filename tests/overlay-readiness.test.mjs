@@ -58,3 +58,12 @@ test("feature test-alerts are authenticated, rate limited by database policy, an
   assert.match(route, /featureSettings\.overlay_enabled !== true/);
   assert.match(route, /moduleEnabled\(body\.featureKey, featureSettings\.configuration\)/);
 });
+
+
+test("anonymous module switch is consistent across test alerts and verified event RPC", async () => {
+  const testRoute = await source("src/app/api/streaming/overlay-links/test/route.ts");
+  const migration = await source("supabase/migrations/20261024100000_enforce_anonymous_overlay_module_gate.sql");
+  assert.match(testRoute, /featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"/);
+  assert.match(migration, /p_feature_key in \('anonim', 'mediashare', 'voicenote'\)/);
+  assert.match(migration, /feature_or_overlay_disabled/);
+});
