@@ -97,3 +97,12 @@ test("database test-alert RPC rechecks feature, overlay, module and token state 
   assert.match(migration, /grant execute on function public\.enqueue_feature_test_alert\(uuid, text\) to service_role/);
   assert.match(migration, /revoke all on function public\.enqueue_feature_test_alert\(uuid, text\) from anon, authenticated/);
 });
+
+
+test("overlay client plays a built-in chime only when the creator has sound enabled", async () => {
+  const client = await source("src/components/overlay-client.tsx");
+  assert.match(client, /if \(!activeAlert \|\| !settings\.sound_enabled\) return/);
+  assert.match(client, /new window\.AudioContext\(\)/);
+  assert.match(client, /oscillator\.frequency\.setValueAtTime\(frequency, start\)/);
+  assert.match(client, /if \(context\) void context\.close\(\)\.catch/);
+});
