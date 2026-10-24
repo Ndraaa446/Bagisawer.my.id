@@ -51,7 +51,7 @@ test("overlay token lifecycle requires authenticated owner and never stores raw 
 
 test("feature test-alerts are authenticated, rate limited by database policy, and respect feature activation", async () => {
   const route = await source("src/app/api/streaming/overlay-links/test/route.ts");
-  assert.match(route, /supabase\\.auth\\.getUser\\(\\)/);
+  assert.ok(route.includes("supabase.auth.getUser()"));
   assert.match(route, /enqueue_feature_test_alert/);
   assert.match(route, /rate_limited/);
   assert.match(route, /featureSettings\?\.enabled !== true/);
