@@ -77,3 +77,11 @@ test("verified feature event migration expands the original test-only event_type
   assert.match(migration, /'donation_anonymous'/);
   assert.match(migration, /'song_request'/);
 });
+
+
+test("creator feature settings have an explicit browser-role deny policy", async () => {
+  const migration = await source("supabase/migrations/20261024120000_deny_client_creator_feature_settings.sql");
+  assert.match(migration, /for all\s+to anon, authenticated/i);
+  assert.match(migration, /using \(false\)/);
+  assert.match(migration, /with check \(false\)/);
+});
