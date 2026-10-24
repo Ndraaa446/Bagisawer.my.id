@@ -36,3 +36,10 @@ test("rejects oversized or non-object configuration payloads", () => {
   assert.equal(validateFeatureConfiguration("pesan", []), false);
   assert.equal(validateFeatureConfiguration("pesan", { blocked: "x".repeat(2001) }), false);
 });
+
+
+test("accepts saved settings for non-payment ecosystem modules", () => {
+  assert.equal(validateFeatureConfiguration("store", { supplier: "Belum dipilih", limit: 24, refund: 7 }), true);
+  assert.equal(validateFeatureConfiguration("notifikasi", { inApp: true, email: false, events: "Pembayaran, keamanan" }), true);
+  assert.equal(validateFeatureConfiguration("kompetisi", { title: "Event komunitas", period: "November", scoring: "Aturan transparan" }), true);
+});
