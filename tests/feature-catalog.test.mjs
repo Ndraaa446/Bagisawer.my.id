@@ -237,3 +237,17 @@ test("overlay resolver rejects inactive feature tokens and isolates event acknow
   assert.match(route, /donor_name: "Anonim"/);
   assert.match(route, /"Cache-Control": "no-store, max-age=0"/);
 });
+
+
+test("anonymous support module switch is honored by public support options and preflight", async () => {
+  const [settings, options, preflight, moduleSettings] = await Promise.all([
+    source("src/app/api/streaming/feature-settings/route.ts"),
+    source("src/app/api/creators/[username]/support-options/route.ts"),
+    source("src/app/api/creators/[username]/support-preflight/route.ts"),
+    source("src/components/feature-module-settings.tsx")
+  ]);
+  assert.match(settings, /featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote"/);
+  assert.match(options, /\["anonim", "mediashare", "voicenote"\]\.includes\(row\.feature_key\)/);
+  assert.match(preflight, /\["anonim", "mediashare", "voicenote"\]\.includes\(body\.featureKey\)/);
+  assert.doesNotMatch(moduleSettings.split("  anonim: [")[0], /key:"enabled",label:"Aktifkan dukungan"/);
+});
