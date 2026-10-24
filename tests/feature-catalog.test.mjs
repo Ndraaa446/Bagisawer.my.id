@@ -212,3 +212,28 @@ test("feature settings UI reflects normalized activation returned by the server"
   assert.match(component, /setOverlayEnabled\(Boolean\(data\.overlayEnabled\)\)/);
   assert.match(component, /data\.minimumAmount \?\? values\.minimum/);
 });
+
+
+test("per-feature overlay URLs store only token hashes and use the serving request origin", async () => {
+  const route = await source("src/app/api/streaming/overlay-links/route.ts");
+  assert.match(route, /randomBytes\(32\)\.toString\("base64url"\)/);
+  assert.match(route, /createHash\("sha256"\)\.update\(token\)\.digest\("hex"\)/);
+  assert.match(route, /token_hash: tokenHash/);
+  assert.doesNotMatch(route, /token_hash:\s*token\s*[,}]/);
+  assert.match(route, /function appOrigin\(request: Request\)/);
+  assert.match(route, /const url = new URL\(request\.url\)/);
+  assert.match(route, /url\.origin/);
+  assert.match(route, /Referrer-Policy/);
+});
+
+test("overlay resolver rejects inactive feature tokens and isolates event acknowledgement", async () => {
+  const route = await source("src/app/api/overlay/[token]/route.ts");
+  assert.match(route, /\.is\("revoked_at", null\)/);
+  assert.match(route, /featureSetting\?\.enabled !== true \|\| featureSetting\?\.overlay_enabled !== true/);
+  assert.match(route, /if \(eventTypes\) eventQuery = eventQuery\.in\("event_type", eventTypes\)/);
+  assert.match(route, /acknowledgeQuery = acknowledgeQuery\.in\("event_type", resolved\.eventTypes\)/);
+  assert.match(route, /\.eq\("user_id", resolved\.userId\)/);
+  assert.match(route, /if \(event && featureKey === "anonim"\)/);
+  assert.match(route, /donor_name: "Anonim"/);
+  assert.match(route, /"Cache-Control": "no-store, max-age=0"/);
+});
