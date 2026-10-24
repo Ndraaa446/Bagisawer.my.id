@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const FEATURE_KEYS = [
   "saweran", "anonim", "pesan", "target", "mediashare", "voicenote", "lagu", "qris",
   "leaderboard", "subathon", "running-text", "soundboard", "polling", "vip-queue",
-  "bagpao", "gachaton", "bidcoin"
+  "bagpao", "gachaton", "bidcoin", "store", "notifikasi", "kompetisi"
 ] as const;
 type FeatureKey = typeof FEATURE_KEYS[number];
 function json(body: unknown, status = 200) {
