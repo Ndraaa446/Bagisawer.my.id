@@ -77,7 +77,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
 
   const configuration = setting?.configuration && typeof setting.configuration === "object" && !Array.isArray(setting.configuration)
     ? setting.configuration as Record<string, unknown> : {};
-  if (["mediashare", "voicenote"].includes(body.featureKey) && configuration.enabled === false) {
+  if (["anonim", "mediashare", "voicenote"].includes(body.featureKey) && configuration.enabled === false) {
     return json({ error: "Jenis dukungan ini sedang dinonaktifkan oleh kreator." }, 409);
   }
   const minimumAmount = normalizedMinimum(setting?.minimum_amount);
