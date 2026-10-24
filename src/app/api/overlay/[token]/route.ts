@@ -26,6 +26,12 @@ const featureEventTypes: Record<string, string[]> = {
   bidcoin: ["bidcoin"]
 };
 
+function moduleEnabled(featureKey: string, configuration: unknown): boolean {
+  if (featureKey !== "anonim" && featureKey !== "mediashare" && featureKey !== "voicenote") return true;
+  if (!configuration || typeof configuration !== "object" || Array.isArray(configuration)) return true;
+  return (configuration as Record<string, unknown>).enabled !== false;
+}
+
 async function resolveToken(token: string) {
   if (!token || token.length < 40 || token.length > 100) return null;
   const admin = createAdminClient();
@@ -55,7 +61,7 @@ async function resolveToken(token: string) {
     // Mediashare and voice notes have a module-level switch in addition to the
     // shared feature/overlay switches. Fail closed here too, so an old token
     // cannot keep serving a module that its creator disabled in module settings.
-    if ((featureKey === "mediashare" || featureKey === "voicenote") && configuration.enabled === false) return null;
+    if (!moduleEnabled(featureKey, configuration)) return null;
     return {
       admin,
       userId: featureToken.user_id as string,
@@ -98,7 +104,7 @@ async function resolveToken(token: string) {
       const configuration = row.configuration && typeof row.configuration === "object" && !Array.isArray(row.configuration)
         ? row.configuration as Record<string, unknown>
         : {};
-      return !(["mediashare", "voicenote"].includes(row.feature_key) && configuration.enabled === false);
+      return moduleEnabled(row.feature_key as string, configuration);
     }).map((row) => row.feature_key as string);
   }
   const excludeEventTypes = Array.from(new Set(enabledFeatureKeys.flatMap((key) =>
