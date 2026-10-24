@@ -21,20 +21,22 @@ const CONFIG_FIELDS = {
   kompetisi: { title: "string", period: "string", scoring: "string", minimum: "number" },
 };
 
-const NUMBER_LIMITS = {
+const FIELD_LIMITS = {
   minimum: [1000, 100000000],
-  messageLimit: [0, 500],
-  limit: [1, 500],
-  amount: [1000, 1000000000],
-  duration: [1, 1440],
-  size: [1, 25],
-  initial: [1, 1440],
-  perAmount: [0, 3600],
-  cap: [1, 10080],
-  volume: [0, 100],
-  cooldown: [1, 600],
-  dailyLimit: [0, 100000],
-  refund: [0, 90],
+  saweran: { messageLimit: [0, 500] },
+  target: { amount: [1000, 1000000000] },
+  mediashare: { duration: [5, 600] },
+  voicenote: { duration: [3, 180], size: [1, 25] },
+  lagu: { limit: [1, 100] },
+  leaderboard: { limit: [3, 100] },
+  subathon: { initial: [1, 1440], perAmount: [0, 3600], cap: [1, 10080] },
+  "running-text": { duration: [3, 60], limit: [10, 240] },
+  soundboard: { volume: [0, 100], cooldown: [1, 600] },
+  polling: { duration: [1, 1440] },
+  "vip-queue": { limit: [1, 500] },
+  gachaton: { limit: [1, 100] },
+  bidcoin: { dailyLimit: [0, 100000] },
+  store: { limit: [1, 500], refund: [0, 90] },
 };
 
 const STRING_LIMITS = {
@@ -104,7 +106,7 @@ export function validateFeatureConfiguration(featureKey, configuration) {
     }
     if (expectedType === "number") {
       if (typeof value !== "number" || !Number.isSafeInteger(value)) return false;
-      const bounds = NUMBER_LIMITS[key];
+      const bounds = key === "minimum" ? FIELD_LIMITS.minimum : FIELD_LIMITS[featureKey]?.[key];
       if (bounds && (value < bounds[0] || value > bounds[1])) return false;
       continue;
     }
