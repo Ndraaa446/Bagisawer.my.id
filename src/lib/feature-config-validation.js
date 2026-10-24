@@ -74,8 +74,8 @@ function isValidDateOnly(value) {
 
 function isValidDomainList(value) {
   if (!value.trim()) return true;
-  const domains = value.split(/\\r?\\n/).map((item) => item.trim()).filter(Boolean);
-  const valid = domains.every((domain) => /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$/.test(domain));
+  const domains = value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  const valid = domains.every((domain) => /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/.test(domain));
   return valid && new Set(domains.map((domain) => domain.toLowerCase())).size === domains.length;
 }
 
