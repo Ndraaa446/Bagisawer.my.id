@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { validateFeatureConfiguration } from "@/lib/feature-config-validation";
 
 export const dynamic = "force-dynamic";
 const FEATURE_KEYS = [
@@ -58,7 +59,7 @@ export async function PUT(request: Request) {
   if (!isFeatureKey(body.featureKey) || typeof body.enabled !== "boolean" || (body.overlayEnabled !== undefined && typeof body.overlayEnabled !== "boolean") || (body.minimumAmount !== undefined && (!Number.isSafeInteger(body.minimumAmount) || Number(body.minimumAmount) < 1000 || Number(body.minimumAmount) > 100000000 || Number(body.minimumAmount) % 1000 !== 0))) {
     return json({ error: "Jenis fitur atau status aktivasi tidak valid." }, 400);
   }
-  if (body.configuration !== undefined && (!body.configuration || typeof body.configuration !== "object" || Array.isArray(body.configuration) || Object.keys(body.configuration as Record<string, unknown>).length > 100 || JSON.stringify(body.configuration).length > 20000)) return json({ error: "Konfigurasi fitur tidak valid atau terlalu besar." }, 400);
+  if (body.configuration !== undefined && !validateFeatureConfiguration(body.featureKey, body.configuration)) return json({ error: "Konfigurasi fitur tidak valid: periksa jenis nilai, batas angka, dan kolom yang didukung modul ini." }, 400);
   if (body.featureKey === "saweran" && !body.enabled) {
     return json({ error: "Fitur saweran utama tidak dapat dinonaktifkan dari menu ini." }, 400);
   }
