@@ -39,6 +39,7 @@ export default function CreatorSupportPage() {
   const minimumAmount = selectedFeatureConfig?.minimumAmount ?? 1000;
   const [featureLoadError, setFeatureLoadError] = useState("");
   const [notice, setNotice] = useState("");
+  const [preflightLoading, setPreflightLoading] = useState(false);
 
   useEffect(() => {
     const currentFeature = features.find((feature) => feature.key === selectedFeature);
@@ -93,7 +94,7 @@ export default function CreatorSupportPage() {
     return () => { cancelled = true; };
   }, [username]);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = customAmount.trim() ? Number(customAmount) : amount;
     if (!validateSupportAmount(value, minimumAmount)) {
@@ -104,9 +105,36 @@ export default function CreatorSupportPage() {
       setNotice("Nama maksimal 80 karakter dan pesan maksimal 240 karakter.");
       return;
     }
-    const chosenMethod = methods.find((item) => item.id === method)?.name ?? "metode pilihan";
-    const chosenFeature = features.find((item) => item.key === selectedFeature)?.label ?? "Saweran";
-    setNotice(`Pratinjau berhasil divalidasi: ${chosenFeature} · ${formatIDR(value)} melalui ${chosenMethod}. Checkout dan pemrosesan fitur belum aktif; tidak ada transaksi yang dibuat atau uang yang ditarik.`);
+    setPreflightLoading(true);
+    setNotice("");
+    try {
+      const response = await fetch(`/api/creators/${encodeURIComponent(username)}/support-preflight`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          featureKey: selectedFeature,
+          amount: value,
+          donorName: name,
+          message,
+          paymentMethod: method,
+          anonymous: selectedFeature === "anonim"
+        })
+      });
+      const data = await response.json();
+      if (response.status === 409 && data.code === "checkout_disabled") {
+        const chosenMethod = methods.find((item) => item.id === method)?.name ?? "metode pilihan";
+        const chosenFeature = features.find((item) => item.key === selectedFeature)?.label ?? "Saweran";
+        setNotice(`Data tervalidasi: ${chosenFeature} · ${formatIDR(value)} melalui ${chosenMethod}. Checkout belum aktif karena provider pembayaran belum dikonfigurasi. Tidak ada transaksi atau penarikan uang yang dibuat.`);
+        return;
+      }
+      if (!response.ok) throw new Error(data.error ?? "Dukungan belum dapat divalidasi.");
+      setNotice("Data dukungan berhasil divalidasi.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Dukungan belum dapat divalidasi. Coba lagi.");
+    } finally {
+      setPreflightLoading(false);
+    }
   }
 
   const selectedAmount = customAmount.trim() ? Number(customAmount) : amount;
@@ -194,7 +222,7 @@ export default function CreatorSupportPage() {
                 {features.some((feature) => feature.key === "anonim") && <label className="support-toggle"><input type="checkbox" checked={selectedFeature === "anonim"} onChange={(event) => { const anonymousEnabled = event.target.checked; setSelectedFeature(anonymousEnabled ? "anonim" : "saweran"); if (anonymousEnabled) setName(""); const nextFeature = features.find((feature) => feature.key === (anonymousEnabled ? "anonim" : "saweran")); if (nextFeature && customAmount.trim() && Number(customAmount) < nextFeature.minimumAmount) setCustomAmount(String(nextFeature.minimumAmount)); else if (nextFeature && !customAmount.trim() && amount < nextFeature.minimumAmount) { const nextAmount = amounts.find((value) => value >= nextFeature.minimumAmount); if (nextAmount !== undefined) setAmount(nextAmount); else setCustomAmount(String(nextFeature.minimumAmount)); } }} /><span>Dukung secara anonim. Ini memilih jenis dukungan anonim, dan nama pendukung tidak akan ditampilkan ketika integrasi aktif.</span></label>}
                 {features.some((feature) => feature.key === "pesan") && <div className="support-field"><label htmlFor="support-message">Pesan untuk kreator (opsional)</label><textarea id="support-message" rows={3} value={message} onChange={(event) => setMessage(event.target.value)} maxLength={240} placeholder="Tulis pesan yang positif dan sopan…" /><small style={{color:"#8f88a2",fontSize:10}}>{message.length}/240 karakter</small></div>}
                 <div className="support-field"><span className="support-label">Metode pembayaran</span><div className="support-methods">{methods.map((item) => <label key={item.id} className={method === item.id ? "support-method active" : "support-method"}><input type="radio" name="payment-method" value={item.id} checked={method === item.id} onChange={() => setMethod(item.id)} /><span><strong>{item.name}</strong><small>{item.detail}</small><em>Belum tersedia</em></span></label>)}</div></div>
-                <button className="support-submit" type="submit">Lanjutkan · {formatIDR(Number.isFinite(selectedAmount) && selectedAmount > 0 ? selectedAmount : amount)} ↗</button>
+                <button className="support-submit" type="submit" disabled={preflightLoading}>{preflightLoading ? "Memeriksa dukungan…" : `Validasi dukungan · ${formatIDR(Number.isFinite(selectedAmount) && selectedAmount > 0 ? selectedAmount : amount)}`}</button>
                 {notice && <p className="support-notice" role="status">{notice}</p>}
               </form>
             </section>
