@@ -5,25 +5,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, initialError }: { mode: "login" | "register"; initialError?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError ?? "");
   const isRegister = mode === "register";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true); setError(""); setMessage("");
+    const normalizedEmail = email.trim().toLowerCase();
     try {
       const supabase = createClient();
       if (isRegister) {
         const { error: authError, data } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { display_name: username.trim() || email.split("@")[0] }, emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` }
+          email: normalizedEmail, password,
+          options: { data: { display_name: username.trim() || normalizedEmail.split("@")[0] }, emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` }
         });
         if (authError) throw authError;
         if (data.session) {
@@ -33,7 +34,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           setMessage("Pendaftaran diterima. Periksa email untuk verifikasi sebelum masuk.");
         }
       } else {
-        const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        const { error: authError } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (authError) throw authError;
         router.push("/dashboard"); router.refresh();
       }
@@ -56,7 +57,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {message && <p className="auth-message" role="status">{message}</p>}
         <button className="btn btn-primary auth-submit" type="submit" disabled={busy}>{busy ? "Memproses…" : isRegister ? "Buat akun" : "Masuk"} <span aria-hidden="true">→</span></button>
       </form>
-      {!isRegister && <p className="auth-switch"><Link href="/forgot-password">Lupa kata sandi?</Link></p>}
       {!isRegister && <p className="auth-switch"><Link href="/forgot-password">Lupa kata sandi?</Link></p>}
       <p className="auth-switch">{isRegister ? "Sudah punya akun?" : "Belum punya akun?"} <Link href={isRegister ? "/login" : "/register"}>{isRegister ? "Masuk" : "Daftar sekarang"}</Link></p>
       <p className="auth-note">Autentikasi menggunakan Supabase. Pastikan konfigurasi Supabase dan verifikasi email sudah disiapkan.</p>

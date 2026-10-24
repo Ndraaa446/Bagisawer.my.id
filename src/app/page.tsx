@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 const features = [
@@ -10,23 +13,31 @@ const features = [
 ];
 
 export default function HomePage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
   return (
     <main>
       <header className="wrap nav">
         <Link href="/" className="brand" aria-label="Bagisawer beranda"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link>
-        <nav className="nav-links" aria-label="Navigasi utama">
-          <a href="#fitur">Fitur</a><a href="#cara-kerja">Cara kerja</a><a href="#kreator">Untuk kreator</a>
+        <nav className={`nav-links ${menuOpen ? "nav-links-open" : ""}`} id="primary-navigation" aria-label="Navigasi utama">
+          <a href="#fitur" onClick={closeMenu}>Fitur</a><a href="#cara-kerja" onClick={closeMenu}>Cara kerja</a><a href="#kreator" onClick={closeMenu}>Untuk kreator</a><Link href="/explore" onClick={closeMenu}>Jelajahi</Link><Link href="/faq" onClick={closeMenu}>FAQ</Link>
+          <div className="mobile-nav-actions"><Link className="btn btn-ghost" href="/login" onClick={closeMenu}>Masuk</Link><Link className="btn btn-primary" href="/register" onClick={closeMenu}>Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
         </nav>
-        <div className="nav-actions"><Link className="btn btn-ghost" href="/login">Masuk</Link><Link className="btn btn-primary" href="/register">Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
+        <div className="nav-actions desktop-nav-actions"><Link className="btn btn-ghost" href="/login">Masuk</Link><Link className="btn btn-primary" href="/register">Mulai sekarang <span aria-hidden="true">↗</span></Link></div>
+        <button className={`hamburger ${menuOpen ? "hamburger-open" : ""}`} type="button" aria-label={menuOpen ? "Tutup menu" : "Buka menu"} aria-controls="primary-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}>
+          <span/><span/><span/>
+        </button>
       </header>
 
       <section className="wrap hero">
+        <div className="hero-content">
         <div className="eyebrow"><span className="dot" /> RUANG DUKUNGAN UNTUK KREATOR INDONESIA</div>
         <h1>Karyamu berarti.<br/><span className="gradient-text">Dukungan mereka juga.</span></h1>
         <p className="hero-copy">Bangun koneksi yang lebih dekat dengan komunitasmu. Satu halaman untuk menerima dukungan, merayakan momen livestream, dan tumbuh bersama.</p>
         <div className="hero-actions"><Link href="/register" className="btn btn-primary">Buat halaman kreator <span aria-hidden="true">→</span></Link><a href="#fitur" className="btn btn-ghost">Jelajahi fitur <span aria-hidden="true">↓</span></a></div>
         <p className="trust">Gratis untuk mulai · Pengaturan transparan · Dibangun untuk komunitas</p>
 
+        </div>
         <div className="preview-shell" aria-label="Pratinjau antarmuka Bagisawer">
           <div className="preview"><div className="preview-top"><span className="window-dot"/><span className="window-dot"/><span className="window-dot"/><span style={{marginLeft:10}}>app.bagisawer.id / creator</span><span style={{marginLeft:"auto"}}>● Pratinjau UI</span></div>
             <div className="preview-body">
@@ -61,7 +72,7 @@ export default function HomePage() {
 
       <section className="wrap" id="kreator"><div className="cta"><div className="section-kicker">Langkah berikutnya dimulai di sini</div><h2>Siap tumbuh bersama komunitasmu?</h2><p>Buat identitas kreatormu di Bagisawer dan mulai siapkan ruang dukunganmu.</p><Link className="btn btn-primary" href="/register">Mulai bangun halamanmu <span aria-hidden="true">→</span></Link></div></section>
 
-      <footer className="footer"><div className="wrap footer-inner"><Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link><div>© {new Date().getFullYear()} Bagisawer. Dibuat untuk kreator dan komunitas.</div><nav className="footer-links" aria-label="Tautan footer"><Link href="/features">Fitur</Link><Link href="/docs">Dokumentasi</Link><Link href="/privacy">Privasi</Link><Link href="/terms">Ketentuan</Link><Link href="/support">Bantuan</Link></nav></div></footer>
+      <footer className="footer"><div className="wrap footer-inner"><Link href="/" className="brand"><span className="brand-mark">b</span><span>bagi<span className="gradient-text">sawer</span></span></Link><div>© {new Date().getFullYear()} Bagisawer. Dibuat untuk kreator dan komunitas.</div><nav className="footer-links" aria-label="Tautan footer"><Link href="/explore">Jelajahi kreator</Link><Link href="/features">Fitur</Link><Link href="/docs">Dokumentasi</Link><Link href="/faq">FAQ</Link><Link href="/contact">Kontak</Link><Link href="/fees">Biaya</Link><Link href="/refund">Refund</Link><Link href="/status">Status</Link><Link href="/privacy">Privasi</Link><Link href="/terms">Ketentuan</Link><Link href="/support">Bantuan</Link></nav></div></footer>
     </main>
   );
 }
