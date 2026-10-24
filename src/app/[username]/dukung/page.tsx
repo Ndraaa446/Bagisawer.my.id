@@ -116,6 +116,54 @@ export default function CreatorSupportPage() {
     <main className="support-page">
       <style>{`
         .support-page{min-height:100vh;padding:0 0 50px;background:radial-gradient(ellipse at 50% -10%,#2c1c4b 0,transparent 45%),var(--bg)}.support-wrap{width:min(1050px,calc(100% - 36px));margin:0 auto}.support-nav{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff12}.support-layout{display:grid;grid-template-columns:.82fr 1.18fr;gap:20px;padding:38px 0}.support-creator,.support-form-card{border:1px solid #ffffff12;background:linear-gradient(145deg,#1b1727,#13111b);border-radius:18px;padding:24px;height:max-content}.support-creator{text-align:center;position:sticky;top:20px}.support-avatar{width:78px;height:78px;border-radius:24px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#c4b5fd,#7c3aed);font-size:30px;font-weight:800;margin:0 auto 15px}.support-avatar img{width:100%;height:100%;object-fit:cover}.support-kicker{font-size:10px;letter-spacing:1.7px;font-weight:800;color:#c4b5fd;text-transform:uppercase}.support-creator h1{font-size:27px;letter-spacing:-1px;line-height:1.2;margin:10px 0}.support-handle{font-size:12px;color:#a7a1b8}.support-bio{font-size:13px;color:#a7a1b8;line-height:1.8;margin:16px 0}.support-note{border-top:1px solid #ffffff12;padding-top:15px;color:#8f88a2;font-size:11px;line-height:1.7;text-align:left}.support-form-card h2{font-size:24px;letter-spacing:-.7px;margin:7px 0}.support-intro{font-size:12px;color:#a7a1b8;line-height:1.7;margin-bottom:22px}.support-field{display:grid;gap:7px;margin:17px 0}.support-field label,.support-label{font-size:12px;font-weight:700;color:#e7e2f1}.support-field input,.support-field textarea{width:100%;border:1px solid #383146;background:#0f0d15;color:#f8f7fc;border-radius:10px;padding:12px;font:inherit;font-size:13px;outline:none}.support-field input:focus,.support-field textarea:focus{border-color:#a78bfa}.support-amounts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.support-amount{border:1px solid #383146;border-radius:10px;background:#ffffff04;color:#e7e2f1;padding:12px 5px;font-size:12px}.support-amount.active{border-color:#a78bfa;background:#a78bfa20;color:#e9d5ff}.support-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.support-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.support-feature{display:flex;gap:9px;align-items:flex-start;text-align:left;padding:12px;border:1px solid #383146;border-radius:11px;background:#ffffff03;color:#f8f7fc;min-width:0}.support-feature.active{border-color:#a78bfa;background:#a78bfa12}.support-feature input{accent-color:#a78bfa;margin-top:3px}.support-feature strong{display:block;font-size:12px}.support-feature small{display:block;color:#a7a1b8;font-size:10px;line-height:1.5;margin-top:4px}.support-method{display:flex;align-items:flex-start;gap:10px;text-align:left;padding:12px;border:1px solid #383146;border-radius:11px;background:#ffffff03;color:#f8f7fc;min-width:0}.support-method.active{border-color:#a78bfa;background:#a78bfa12}.support-method input{accent-color:#a78bfa;margin-top:3px}.support-method strong{font-size:12px;display:block}.support-method small{display:block;color:#a7a1b8;font-size:10px;line-height:1.5;margin-top:4px}.support-method em{font-style:normal;font-size:9px;color:#fde68a;display:block;margin-top:5px}.support-toggle{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.6;color:#c8c2d5}.support-toggle input{accent-color:#a78bfa;margin-top:3px}.support-submit{width:100%;padding:14px;border:0;border-radius:11px;background:linear-gradient(100deg,#a78bfa,#7c3aed);color:white;font-weight:800;margin-top:8px}.support-notice{padding:13px;border:1px solid #fbbf2440;border-radius:11px;background:#fbbf240b;color:#fde68a;font-size:11px;line-height:1.7;margin:14px 0 0}.support-loading{max-width:500px;margin:90px auto;text-align:center;color:#a7a1b8;line-height:1.8}.support-error{max-width:500px;margin:90px auto;text-align:center;border:1px solid #ffffff12;background:#1b1727;border-radius:18px;padding:28px}.support-error p{font-size:13px;color:#a7a1b8;line-height:1.7}@media(max-width:760px){.support-layout{grid-template-columns:1fr;padding-top:20px}.support-creator{position:static}.support-methods,.support-feature-grid{grid-template-columns:1fr}.support-amounts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+        /* Donation page redesign: single, focused checkout column instead of a split dashboard layout. */
+        .support-page{background:#f6f3ee!important;color:#29251f!important;padding-bottom:34px}
+        .support-wrap{width:min(100% - 32px,760px)!important}
+        .support-nav{height:68px;border-bottom:1px solid #e6ded4!important}
+        .support-nav .brand{font-size:20px}
+        .support-nav .btn{background:#fff;border-color:#e5dace;color:#66513f;box-shadow:none}
+        .support-layout{display:flex!important;flex-direction:column;gap:14px!important;padding:22px 0 28px!important;max-width:680px;margin:0 auto}
+        .support-creator{position:static!important;top:auto!important;text-align:center!important;padding:22px 24px!important;border:1px solid #e8dfd4!important;border-radius:16px!important;background:#fff!important;box-shadow:0 4px 18px #4a32140a!important}
+        .support-avatar{width:68px!important;height:68px!important;border-radius:50%!important;margin:0 auto 12px!important;background:#e9d9c8!important;color:#765033!important;font-size:26px!important}
+        .support-kicker{font-size:10px!important;letter-spacing:1.2px!important;color:#8c5d40!important}
+        .support-creator h1{font-size:24px!important;letter-spacing:-.5px!important;margin:7px 0 4px!important;color:#29251f!important}
+        .support-handle{font-size:12px!important;color:#85796e!important}
+        .support-bio{font-size:13px!important;line-height:1.65!important;color:#6f665c!important;max-width:480px;margin:10px auto 0!important}
+        .support-note{display:none!important}
+        .support-form-card{padding:24px!important;border:1px solid #e8dfd4!important;border-radius:16px!important;background:#fff!important;box-shadow:0 4px 18px #4a32140a!important}
+        .support-form-card h2{font-size:25px!important;letter-spacing:-.7px!important;color:#29251f!important;margin:6px 0 7px!important}
+        .support-intro{font-size:13px!important;line-height:1.65!important;color:#7b7167!important;margin-bottom:20px!important}
+        .support-field{gap:9px!important;margin:18px 0!important}
+        .support-field label,.support-label{font-size:13px!important;font-weight:700!important;color:#3d342c!important}
+        .support-field input,.support-field textarea{background:#fff!important;border:1px solid #ded5ca!important;border-radius:10px!important;color:#29251f!important;padding:13px 14px!important;font-size:14px!important}
+        .support-field input:focus,.support-field textarea:focus{border-color:#a87954!important;box-shadow:0 0 0 3px #a8795417!important}
+        .support-amounts{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}
+        .support-amount{padding:12px 6px!important;background:#fff!important;border:1px solid #ded5ca!important;border-radius:10px!important;color:#51453a!important;font-size:13px!important;font-weight:700!important}
+        .support-amount.active{background:#f5ebe1!important;border-color:#9c6c48!important;color:#70472b!important}
+        .support-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+        .support-feature,.support-method{padding:12px!important;border:1px solid #e3dbd1!important;border-radius:10px!important;background:#fff!important;color:#332b24!important}
+        .support-feature.active,.support-method.active{background:#f7eee6!important;border-color:#b78b69!important}
+        .support-feature strong,.support-method strong{font-size:12px!important;color:#332b24!important}
+        .support-feature small,.support-method small{color:#7c7166!important;font-size:11px!important;line-height:1.45!important}
+        .support-methods{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+        .support-method em{color:#986c3f!important;font-size:10px!important}
+        .support-toggle{font-size:12px!important;color:#5f554b!important}
+        .support-submit{margin-top:10px!important;padding:15px!important;border-radius:10px!important;background:#8c5d40!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:none!important}
+        .support-notice{background:#fff8e8!important;border-color:#ead6a9!important;color:#72531f!important}
+        .support-page footer{max-width:680px;margin:0 auto;color:#8b8075!important;border-color:#e6ded4!important}
+        .support-error{background:#fff!important;border-color:#e8dfd4!important;color:#29251f!important}
+        @media(max-width:600px){
+          .support-wrap{width:calc(100% - 24px)!important}
+          .support-nav{height:62px!important}
+          .support-layout{padding:14px 0 22px!important;gap:10px!important}
+          .support-creator{padding:18px 16px!important}
+          .support-form-card{padding:18px 15px!important}
+          .support-form-card h2{font-size:23px!important}
+          .support-amounts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+          .support-feature-grid,.support-methods{grid-template-columns:1fr!important}
+        }
+
       `}</style>
       <div className="support-wrap">
         <header className="support-nav">
