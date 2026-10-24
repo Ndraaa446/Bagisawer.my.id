@@ -67,3 +67,13 @@ test("anonymous module switch is consistent across test alerts and verified even
   assert.match(migration, /p_feature_key in \('anonim', 'mediashare', 'voicenote'\)/);
   assert.match(migration, /feature_or_overlay_disabled/);
 });
+
+
+test("verified feature event migration expands the original test-only event_type constraint", async () => {
+  const migration = await source("supabase/migrations/20261024100000_enforce_anonymous_overlay_module_gate.sql");
+  assert.match(migration, /drop constraint if exists alert_events_event_type_check/);
+  assert.match(migration, /check \(event_type in \(/);
+  assert.match(migration, /'test', 'donation', 'sandbox_donation'/);
+  assert.match(migration, /'donation_anonymous'/);
+  assert.match(migration, /'song_request'/);
+});
