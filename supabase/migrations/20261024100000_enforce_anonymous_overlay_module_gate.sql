@@ -2,6 +2,20 @@
 -- feature-settings API, and feature-specific test-alert endpoint.
 -- This follow-up migration intentionally does not rewrite an already-applied migration.
 
+-- The original test-only schema constrained event_type to 'test'. Expand the
+-- constraint explicitly before the verified producer is used; test events remain valid.
+alter table public.alert_events
+  drop constraint if exists alert_events_event_type_check;
+
+alter table public.alert_events
+  add constraint alert_events_event_type_check
+  check (event_type in (
+    'test', 'donation', 'sandbox_donation', 'anonim', 'donation_anonymous',
+    'pesan', 'donation_message', 'target', 'goal', 'milestone', 'mediashare',
+    'voicenote', 'lagu', 'song_request', 'qris', 'leaderboard', 'subathon',
+    'running-text', 'soundboard', 'polling', 'vip-queue', 'bagpao', 'gachaton', 'bidcoin'
+  ));
+
 create or replace function public.enqueue_verified_feature_event(
   p_user_id uuid,
   p_feature_key text,
