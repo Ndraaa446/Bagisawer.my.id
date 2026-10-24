@@ -16,7 +16,6 @@ type Field = {
 
 const fieldsByFeature: Record<string, Field[]> = {
   saweran: [
-    {key:"enabled",label:"Aktifkan dukungan",type:"toggle",initial:true},
     {key:"minimum",label:"Nominal minimum (Rp)",type:"number",min:1000,max:100000000,initial:1000},
     {key:"suggested",label:"Nominal rekomendasi",type:"text",initial:"10000, 25000, 50000"},
     {key:"anonymous",label:"Izinkan dukungan anonim",type:"toggle",initial:true},
