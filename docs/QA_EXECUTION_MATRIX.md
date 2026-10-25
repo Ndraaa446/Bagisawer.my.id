@@ -1,6 +1,6 @@
 # Bagisawer QA execution matrix
 
-Last reviewed: 2026-10-23. This is a checklist, not a claim that every row has passed.
+Last reviewed: 2026-10-25. This is a checklist, not a claim that every row has passed.
 
 ## Feature-by-feature flow
 
@@ -87,3 +87,14 @@ A browser redirect or client-submitted "success" is never proof of payment. Do n
 - [ ] Media URL and upload protections prevent SSRF, unsafe MIME, oversized payloads and unmoderated playback.
 - [ ] Responsive layouts and keyboard/accessibility behavior verified on desktop and mobile.
 - [ ] Netlify Deploy Preview and OBS Browser Source tested end-to-end without weakening SSO or deploying to production.
+
+
+## QA follow-up (2026-10-25)
+
+- CI passed for commit `256d37c4a9d7b590923b4d22249df8f574c323a2`: unit/contract tests, ESLint, TypeScript typecheck, and production build.
+- Dashboard/feature-center audit fixed a stale-state bug when navigating between feature modules and aligned the feature center with the new ivory/ink/lime design. A regression test now covers module-state reset. The Saweran card is labelled "Belum diuji E2E" rather than implying readiness.
+- Donation amount regression coverage now includes Rp1,000 minimum, Rp100,000,000 maximum, below-minimum, above-maximum, step mismatch, fractional values, unsafe integers, and invalid configured minimums.
+- Read-only QA database checks confirmed 17 feature token rows with 17 unique hashes and a unique constraint on creator + feature. RLS is enabled on overlay tokens, feature settings, and alert events. Only the `service_role` can execute the server-side enqueue RPCs.
+- QA RPC probes (QA project only) verified: amount below a configured Rp5,000 minimum returns `below_minimum`; Rp25,000 Saweran produces a `donation` event; Rp5,000 Pesan produces a separate `donation_message` event; anonymous support stores `Anonim` instead of the submitted name; and the feature test-alert RPC enqueues a test-labelled event. Probe events were deleted after verification and no live-payment or ledger operation was invoked.
+- After cleanup, all feature settings remain disabled and no probe event remains. Five QA overlay tokens are revoked (including the previously revoked Polling token); 12 token rows remain unrevoked. Because settings are disabled, the overlay resolver/RPC gate rejects event creation. Some QA rows retain `overlay_enabled=true` while `enabled=false`; the server checks both flags and fails closed, but this fixture inconsistency should be normalized before a full browser E2E run.
+- Still pending: authenticated HTTP tests for every token URL, explicit invalid/revoked token HTTP status checks against a reachable preview, browser acknowledgement/isolation checks for all 17 overlays, and OBS Browser Source visual/audio verification. CI passing does not count as those runtime tests. Payment provider, checkout, webhook, and payout remain disabled.
