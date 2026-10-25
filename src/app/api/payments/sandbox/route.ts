@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   if (authError || !user) return jsonError("Sesi masuk diperlukan.", 401);
 
   const admin = createAdminClient();
-  if (!admin) return jsonError("Sandbox memerlukan secret Supabase khusus server di Vercel.", 503);
+  if (!admin) return jsonError("Sandbox memerlukan kunci rahasia Supabase khusus server yang belum dikonfigurasi.", 503);
 
   let body: { action?: unknown; amount?: unknown; donorName?: unknown; message?: unknown; reference?: unknown };
   try { body = await request.json(); } catch { return jsonError("JSON permintaan tidak valid.", 400); }

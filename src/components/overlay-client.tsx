@@ -12,14 +12,14 @@ type OverlaySettings = {
 
 type AlertEvent = {
   id: string;
-  event_type: "test";
-  source: "test";
+  event_type: string;
+  source: string;
   donor_name: string;
   message: string;
   amount: number;
 };
 
-type Payload = { settings: OverlaySettings; event: AlertEvent | null };
+type Payload = { settings: OverlaySettings; event: AlertEvent | null; featureKey?: string; featureConfiguration?: Record<string, unknown> };
 
 const fallbackSettings: OverlaySettings = {
   alert_enabled: true,
@@ -29,8 +29,31 @@ const fallbackSettings: OverlaySettings = {
   sound_enabled: true
 };
 
+const featureTitles: Record<string, string> = {
+  general: "Dukungan baru",
+  saweran: "Saweran masuk",
+  anonim: "Dukungan anonim",
+  pesan: "Pesan dukungan",
+  target: "Target dukungan",
+  mediashare: "Permintaan media",
+  voicenote: "Voice note masuk",
+  lagu: "Request lagu",
+  qris: "Dukungan QR",
+  leaderboard: "Peringkat pendukung",
+  subathon: "Subathon",
+  "running-text": "Running text",
+  soundboard: "Soundboard",
+  polling: "Polling",
+  "vip-queue": "VIP queue",
+  bagpao: "Bagpao",
+  gachaton: "Gachaton",
+  bidcoin: "Bidcoin"
+};
+
 export function OverlayClient({ token }: { token: string }) {
   const [settings, setSettings] = useState(fallbackSettings);
+  const [featureKey, setFeatureKey] = useState("general");
+  const [featureConfiguration, setFeatureConfiguration] = useState<Record<string, unknown>>({});
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [invalid, setInvalid] = useState(false);
   const activeRef = useRef(false);
@@ -49,6 +72,8 @@ export function OverlayClient({ token }: { token: string }) {
         const payload = await response.json() as Payload;
         if (stopped) return;
         setSettings(payload.settings ?? fallbackSettings);
+        setFeatureKey(payload.featureKey ?? "general");
+        setFeatureConfiguration(payload.featureConfiguration ?? {});
         if (payload.event && !activeRef.current) {
           activeRef.current = true;
           setActiveAlert(payload.event);
@@ -67,6 +92,41 @@ export function OverlayClient({ token }: { token: string }) {
   }, [token]);
 
   useEffect(() => {
+    if (!activeAlert || !settings.sound_enabled) return;
+    let context: AudioContext | null = null;
+
+    try {
+      // A short built-in chime means the overlay has sound even before a custom
+      // sound library is configured. It respects the creator's sound toggle.
+      const audioContext = new window.AudioContext();
+      context = audioContext;
+      const startAt = audioContext.currentTime;
+      [660, 880].forEach((frequency, index) => {
+        const start = startAt + index * 0.11;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.07, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.19);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.2);
+      });
+    } catch {
+      // Browser audio can be unavailable or blocked; alerts must still display.
+      if (context) void context.close().catch(() => undefined);
+      context = null;
+    }
+
+    return () => {
+      if (context) void context.close().catch(() => undefined);
+    };
+  }, [activeAlert?.id, settings.sound_enabled]);
+
+  useEffect(() => {
     if (!activeAlert) return;
     const event = activeAlert;
     const timer = window.setTimeout(async () => {
@@ -81,26 +141,54 @@ export function OverlayClient({ token }: { token: string }) {
         activeRef.current = false;
         setActiveAlert(null);
       }
-    }, Math.max(3, Math.min(15, settings.duration_seconds)) * 1000);
+    }, Math.max(3, Math.min(600, Number(featureConfiguration.duration ?? settings.duration_seconds))) * 1000);
 
     return () => window.clearTimeout(timer);
-  }, [activeAlert, settings.duration_seconds, token]);
+  }, [activeAlert, settings.duration_seconds, featureConfiguration.duration, token]);
 
   if (invalid || !settings.alert_enabled) return null;
+  const testLabel = activeAlert?.source === "test" || activeAlert?.event_type === "test";
+  const title = featureTitles[featureKey] ?? "Dukungan baru";
+  const messageLimit = Number(featureConfiguration.limit ?? featureConfiguration.messageLimit ?? 240);
+  const visibleMessage = activeAlert?.message ? activeAlert.message.slice(0, Number.isFinite(messageLimit) ? Math.max(0, Math.min(500, messageLimit)) : 240) : "";
 
   return (
     <main className="overlay-root" aria-live="polite">
-      {activeAlert && (
-        <section className={`overlay-alert overlay-${settings.theme}`} role="status">
-          <div className="overlay-heart" aria-hidden="true">♡</div>
+      <style>{`
+        .overlay-feature-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.5px;color:#d9ccff;margin-bottom:7px}
+        .overlay-feature-note{font-size:10px;color:#c4b5fd;line-height:1.5;margin-top:7px}
+        .overlay-running-text{max-width:100%;padding:14px 24px;border:1px solid #d9c8b7;border-radius:12px;background:#fffdf9;color:#302319;box-shadow:none;backdrop-filter:none;overflow:hidden;white-space:nowrap}
+        .overlay-running-text strong{color:#754426;margin-right:12px}
+        .overlay-module-card{display:flex;gap:16px;align-items:center;max-width:700px;padding:20px 24px;border:1px solid #d9c8b7;border-radius:12px;background:#fffdf9;box-shadow:none;backdrop-filter:none;color:#302319}
+        .overlay-module-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;background:#f0e3d7;color:#754426;font-size:23px;flex-shrink:0}
+        .overlay-module-copy strong{font-size:19px;display:block}.overlay-module-copy p{font-size:13px;color:#5b463b;line-height:1.6;margin:5px 0}
+        .overlay-module-copy b{font-size:15px;color:#c4b5fd}
+      `}</style>
+      {activeAlert && (featureKey === "running-text" ? (
+        <section className="overlay-running-text" role="status">
+          <strong>{testLabel ? "UJI COBA" : title}</strong><span>{activeAlert.donor_name}: {visibleMessage}</span>
+        </section>
+      ) : featureKey === "mediashare" || featureKey === "voicenote" || featureKey === "lagu" ? (
+        <section className="overlay-module-card" role="status">
+          <div className="overlay-module-icon">{featureKey === "mediashare" ? "▶" : featureKey === "voicenote" ? "♫" : "♪"}</div>
+          <div className="overlay-module-copy">
+            <span className="overlay-feature-label">{testLabel ? "UJI COBA · BUKAN DONASI" : title.toUpperCase()}</span>
+            <strong>{activeAlert.donor_name}</strong><p>{visibleMessage}</p>
+            <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
+            <div className="overlay-feature-note">{featureKey === "mediashare" ? "Pemutaran media memerlukan validasi URL dan moderasi." : featureKey === "voicenote" ? "Pemutaran audio menunggu validasi dan persetujuan." : "Permintaan lagu harus memakai integrasi resmi yang diizinkan."}</div>
+          </div>
+        </section>
+      ) : (
+        <section className={`overlay-alert overlay-${settings.theme} overlay-feature-${featureKey}`} role="status">
+          <div className="overlay-heart" aria-hidden="true">{featureKey === "leaderboard" ? "♜" : featureKey === "subathon" ? "◷" : featureKey === "polling" ? "☷" : featureKey === "soundboard" ? "◖" : "♡"}</div>
           <div className="overlay-copy">
-            <span className="overlay-test-label">UJI COBA · BUKAN DONASI</span>
+            <span className="overlay-test-label">{testLabel ? "UJI COBA · BUKAN DONASI" : title.toUpperCase()}</span>
             <strong>{activeAlert.donor_name}</strong>
-            <p>{activeAlert.message}</p>
+            <p>{visibleMessage}</p>
             <b>Rp{activeAlert.amount.toLocaleString("id-ID")}</b>
           </div>
         </section>
-      )}
+      ))}
     </main>
   );
 }

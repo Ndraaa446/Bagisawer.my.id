@@ -40,7 +40,7 @@ export default async function PublicCreatorPage({ params }: Props) {
         <Link className="btn btn-ghost" href="/login">Ruang kreator</Link>
       </header>
       <section className="public-profile-card">
-        <div className="public-avatar">{profile.display_name.slice(0, 1).toUpperCase()}</div>
+        <div className="public-avatar">{profile.avatar_url ? <img src={profile.avatar_url} alt={`Avatar ${profile.display_name}`} referrerPolicy="no-referrer" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"inherit"}} /> : profile.display_name.slice(0, 1).toUpperCase()}</div>
         <div className="section-kicker">HALAMAN KREATOR</div>
         <h1 className="public-profile-title">{profile.display_name}</h1>
         <p className="public-profile-username">@{profile.username}</p>
@@ -49,7 +49,7 @@ export default async function PublicCreatorPage({ params }: Props) {
           <span className="profile-status status-public">Profil publik</span>
           <p>Halaman dukungan dan pembayaran belum aktif. Jangan kirim uang melalui tautan atau metode yang belum diverifikasi oleh Bagisawer.</p>
         </div>
-        <Link href="/features" className="btn btn-ghost">Pelajari Bagisawer <span aria-hidden="true">↗</span></Link>
+        <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}><Link href={`/${profile.username}/dukung`} className="btn btn-primary">Pratinjau dukungan <span aria-hidden="true">↗</span></Link><Link href="/features" className="btn btn-ghost">Pelajari Bagisawer <span aria-hidden="true">↗</span></Link></div>
       </section>
       <footer className="dashboard-footer">Bagisawer · Dibuat untuk kreator dan komunitas Indonesia</footer>
     </main>

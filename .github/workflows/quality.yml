@@ -1,0 +1,40 @@
+name: Quality checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - chore/netlify-preview-readiness
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, typecheck, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://gzfeyyflrnrqrnbvgsow.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_0olkpgV4Ufae1aScABVu3A_YtvvFceC
+      NEXT_PUBLIC_APP_URL: https://bagisawe.netlify.app
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Unit and contract tests
+        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build

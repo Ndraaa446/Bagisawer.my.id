@@ -18,9 +18,19 @@ export default function ResetPasswordPage() {
     setBusy(true);
     try {
       const supabase = createClient();
+      const { data: { user }, error: sessionError } = await supabase.auth.getUser();
+      if (sessionError || !user) {
+        throw new Error("Sesi pemulihan tidak valid atau sudah kedaluwarsa. Minta tautan pemulihan baru.");
+      }
+
       const result = await supabase.auth.updateUser({ password });
       if (result.error) throw result.error;
-      setMessage("Kata sandi berhasil diperbarui. Silakan masuk dengan kata sandi baru.");
+
+      // End the recovery session so the user must authenticate with the new password.
+      const { error: signOutError } = await supabase.auth.signOut();
+      setMessage(signOutError
+        ? "Kata sandi berhasil diperbarui. Jika sesi masih aktif, keluar lalu masuk kembali dengan kata sandi baru."
+        : "Kata sandi berhasil diperbarui. Silakan masuk kembali dengan kata sandi baru.");
       setPassword(""); setConfirmation("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Tidak dapat memperbarui kata sandi. Minta tautan pemulihan baru.");
