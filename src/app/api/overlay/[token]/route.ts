@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ token: string }> };
 
 const featureEventTypes: Record<string, string[]> = {
-  saweran: ["test", "donation", "sandbox_donation"],
+  saweran: ["donation", "sandbox_donation"],
   anonim: ["anonim", "donation_anonymous"],
   pesan: ["pesan", "donation_message"],
   target: ["target", "goal", "milestone"],
