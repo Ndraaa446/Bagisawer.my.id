@@ -6,7 +6,7 @@ import { FeatureModuleSettings } from "@/components/feature-module-settings";
 
 type Feature = { slug: string; icon: string; title: string; description: string; group: string; overlay?: boolean; status?: string };
 const features: Feature[] = [
-  { slug: "saweran", icon: "♡", title: "Saweran standar", description: "Nominal dukungan, nama atau anonim, dan pesan untuk kreator.", group: "Donasi", overlay: true, status: "UI direncanakan" },
+  { slug: "saweran", icon: "♡", title: "Saweran standar", description: "Nominal dukungan, nama atau anonim, dan pesan untuk kreator.", group: "Donasi", overlay: true, status: "Belum diuji E2E" },
   { slug: "anonim", icon: "◌", title: "Dukungan anonim", description: "Sembunyikan identitas pendukung dari halaman, feed, dan overlay.", group: "Donasi", overlay: true },
   { slug: "pesan", icon: "✉", title: "Pesan dukungan", description: "Moderasi pesan, batas karakter, filter, dan tampilan alert.", group: "Donasi", overlay: true },
   { slug: "target", icon: "◎", title: "Target dukungan", description: "Target nominal, progres, milestone, dan widget progres.", group: "Donasi", overlay: true },
