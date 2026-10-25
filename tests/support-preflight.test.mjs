@@ -42,3 +42,16 @@ test("shared support validators enforce server-side amount and text boundaries",
   assert.equal(validateSupportText("x".repeat(81), "ok"), false);
   assert.equal(validateSupportText("ok", "x".repeat(241)), false);
 });
+
+
+test("support amount validator covers the minimum, maximum, step and safe-integer boundaries", () => {
+  assert.equal(validateSupportAmount(1000, 1000), true);
+  assert.equal(validateSupportAmount(100000000, 1000), true);
+  assert.equal(validateSupportAmount(999, 1000), false);
+  assert.equal(validateSupportAmount(100000001, 1000), false);
+  assert.equal(validateSupportAmount(1500, 1000), false);
+  assert.equal(validateSupportAmount(1000.5, 1000), false);
+  assert.equal(validateSupportAmount(Number.MAX_SAFE_INTEGER + 1, 1000), false);
+  assert.equal(validateSupportAmount(10000, 999), false);
+  assert.equal(validateSupportAmount(10000, 100000001), false);
+});
