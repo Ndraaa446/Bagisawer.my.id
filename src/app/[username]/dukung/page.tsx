@@ -192,6 +192,36 @@ export default function CreatorSupportPage() {
           .support-feature-grid,.support-methods{grid-template-columns:1fr!important}
         }
 
+        /* Final alignment pass: keep /dukung on the same ivory / ink / acid / orange system as the redesigned site. */
+        .support-page{background:var(--paper,#f4f2ec)!important;color:var(--ink,#171914)!important}
+        .support-nav{border-bottom-color:var(--line,#d9d6cc)!important}
+        .support-nav .brand,.support-nav .brand-mark{color:var(--ink,#171914)!important}
+        .support-nav .brand-mark{background:var(--acid,#d7ff55)!important;border:1px solid var(--ink,#171914)!important;border-radius:50%!important}
+        .support-nav .gradient-text{color:var(--ink,#171914)!important}
+        .support-nav .btn{background:transparent!important;border-color:var(--ink,#171914)!important;color:var(--ink,#171914)!important;border-radius:4px!important}
+        .support-nav .btn:hover{background:var(--acid,#d7ff55)!important}
+        .support-creator,.support-form-card,.support-error{background:var(--panel,#fffefa)!important;border-color:var(--line,#d9d6cc)!important;border-radius:5px!important;box-shadow:0 12px 34px rgba(25,27,19,.045)!important}
+        .support-avatar{background:var(--acid,#d7ff55)!important;color:var(--ink,#171914)!important;border:1px solid var(--ink,#171914)!important;border-radius:5px!important}
+        .support-kicker{color:#686b61!important;letter-spacing:1.5px!important}
+        .support-creator h1,.support-form-card h2,.support-error h1{color:var(--ink,#171914)!important}
+        .support-handle,.support-bio,.support-intro,.support-loading,.support-error p{color:var(--muted,#686b61)!important}
+        .support-field label,.support-label{color:var(--ink,#171914)!important}
+        .support-field input,.support-field textarea{background:#fffefa!important;border-color:var(--line,#d9d6cc)!important;color:var(--ink,#171914)!important;border-radius:4px!important}
+        .support-field input:focus,.support-field textarea:focus{border-color:var(--ink,#171914)!important;box-shadow:0 0 0 2px rgba(215,255,85,.55)!important}
+        .support-amount,.support-feature,.support-method{background:#fffefa!important;border-color:var(--line,#d9d6cc)!important;color:var(--ink,#171914)!important;border-radius:4px!important}
+        .support-amount.active,.support-feature.active,.support-method.active{background:var(--acid,#d7ff55)!important;border-color:var(--ink,#171914)!important;color:var(--ink,#171914)!important}
+        .support-feature small,.support-method small{color:var(--muted,#686b61)!important}
+        .support-method em{color:#9a3c20!important}
+        .support-toggle{color:var(--muted,#686b61)!important}
+        .support-toggle input,.support-feature input,.support-method input{accent-color:var(--ink,#171914)!important}
+        .support-submit{background:var(--ink,#171914)!important;color:#fffefa!important;border:1px solid var(--ink,#171914)!important;border-radius:4px!important;transition:background .2s,color .2s,border-color .2s!important}
+        .support-submit:hover:not(:disabled){background:var(--orange,#ff6538)!important;border-color:var(--orange,#ff6538)!important}
+        .support-submit:disabled{opacity:.65;cursor:wait}
+        .support-notice{background:#fff7d6!important;border-color:#e7d991!important;color:#57461d!important;border-radius:4px!important}
+        .support-page footer{border-top-color:var(--line,#d9d6cc)!important;color:var(--muted,#686b61)!important}
+        @media(max-width:760px){.support-wrap{width:calc(100% - 24px)!important}.support-layout{padding-top:16px!important}.support-creator,.support-form-card{padding:20px!important}}
+
+
       `}</style>
       <div className="support-wrap">
         <header className="support-nav">
