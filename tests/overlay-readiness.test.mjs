@@ -131,3 +131,12 @@ test("overlay resolution fails closed for revoked tokens and disabled feature se
   assert.match(route, /featureSetting\?\.enabled !== true \|\| featureSetting\?\.overlay_enabled !== true/);
   assert.match(route, /if \(!resolved\) \{\s*if \(!createAdminClient\(\)\) return noStoreJson\(\{ error: "Overlay belum dikonfigurasi\." \}, 503\);\s*return notFound\(\);/);
 });
+
+
+test("Saweran test alerts use a feature-specific donation event instead of the shared general test event", async () => {
+  const route = await source("src/app/api/overlay/[token]/route.ts");
+  const migration = await source("supabase/migrations/20261025100000_isolate_saweran_test_alerts.sql");
+  assert.match(route, /saweran: \["donation", "sandbox_donation"\]/);
+  assert.doesNotMatch(route, /saweran: \["test",/);
+  assert.match(migration, /v_event_type := case when p_feature_key = 'saweran' then 'donation' else p_feature_key end/);
+});
