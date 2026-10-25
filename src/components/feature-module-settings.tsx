@@ -143,6 +143,13 @@ export function FeatureModuleSettings({ featureKey, title }: { featureKey: strin
 
   useEffect(() => {
     let cancelled = false;
+    // The same client component can survive navigation between module routes. Reset
+    // module-scoped state before applying the selected feature's server settings.
+    setActivationLoading(true);
+    setNotice("");
+    setFeatureEnabled(false);
+    setOverlayEnabled(false);
+    setValues(Object.fromEntries(fields.map((field) => [field.key, field.initial ?? ""])));
     void fetch("/api/streaming/feature-settings", { cache: "no-store" }).then(async (response) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Status aktivasi fitur gagal dimuat.");
