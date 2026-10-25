@@ -114,3 +114,20 @@ test("feature module settings reset module-scoped form and activation state on n
   assert.match(component, /setValues\(Object\.fromEntries\(fields\.map\(\(field\) => \[field\.key, field\.initial \?\? ""\]\)\)\);/);
   assert.match(component, /\}, \[storageKey, featureKey\]\);/);
 });
+
+
+test("feature settings API rejects non-IDR-step minimums and revokes tokens when a feature is disabled", async () => {
+  const route = await source("src/app/api/streaming/feature-settings/route.ts");
+  assert.match(route, /Number\(body\.minimumAmount\) < 1000/);
+  assert.match(route, /Number\(body\.minimumAmount\) > 100000000/);
+  assert.match(route, /Number\(body\.minimumAmount\) % 1000 !== 0/);
+  assert.match(route, /\.update\(\{ revoked_at: new Date\(\)\.toISOString\(\) \}\)/);
+  assert.match(route, /\.is\("revoked_at", null\)/);
+});
+
+test("overlay resolution fails closed for revoked tokens and disabled feature settings", async () => {
+  const route = await source("src/app/api/overlay/[token]/route.ts");
+  assert.match(route, /\.is\("revoked_at", null\)/);
+  assert.match(route, /featureSetting\?\.enabled !== true \|\| featureSetting\?\.overlay_enabled !== true/);
+  assert.match(route, /if \(!resolved\) return noStoreJson\(\{ error: "Overlay tidak ditemukan atau tidak aktif\." \}, 404\)/);
+});
