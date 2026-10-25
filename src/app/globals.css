@@ -926,3 +926,35 @@ h2{font-family:'Space Grotesk',Arial,sans-serif;font-size:clamp(34px,4.4vw,57px)
  html{scroll-behavior:auto}
  *,*::before,*::after{transition:none!important;animation:none!important}
 }
+
+
+/* Feature center: align the entire creator tool surface with the editorial ivory/ink/acid system. */
+.tool-center{color:var(--ink);padding-bottom:64px}
+.tool-center .tool-topbar{border-color:var(--line)}
+.tool-center .tool-eyebrow,.tool-center .tool-card-footer small{color:#686b60}
+.tool-center .tool-title{color:var(--ink);font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-.07em}
+.tool-center .tool-lead,.tool-center .tool-section-head p{color:#686b60}
+.tool-center .tool-notice{border:1px solid #e5c98a;background:#fff8e7;color:#664b18;border-radius:4px}
+.tool-center .tool-nav a{border-color:var(--line);border-radius:3px;background:#fffefa;color:#55584d}
+.tool-center .tool-nav a.active,.tool-center .tool-nav a:hover{border-color:var(--ink);background:var(--acid);color:var(--ink)}
+.tool-center .tool-card{border:1px solid var(--line);border-radius:4px;background:#fffefa;color:var(--ink)}
+.tool-center .tool-icon,.tool-center .tool-method-mark{border-radius:4px;background:var(--acid);color:var(--ink)}
+.tool-center .tool-card h3,.tool-center .tool-section-head h2{color:var(--ink)}
+.tool-center .tool-card p,.tool-center .tool-method p{color:#686b60}
+.tool-center .tool-badge{border-radius:3px;border-color:var(--line);background:#f0efe8;color:#55584d}
+.tool-center .tool-badge-green{border-color:#c7e2c6;background:#eaf5e9;color:#245e3b}
+.tool-center .tool-badge-amber{border-color:#e5c98a;background:#fff8e7;color:#664b18}
+.tool-center .tool-card-footer{border-color:var(--line)}
+.tool-center .tool-card-footer a,.tool-center .tool-card-footer button{border:1px solid var(--ink);border-radius:3px;background:var(--acid);color:var(--ink)}
+.tool-center .tool-card-footer button:disabled{opacity:.5}
+.tool-center .tool-method{border-color:var(--line);border-radius:4px;background:#f9f8f3}
+.tool-center .tool-overlay-url{background:#f9f8f3;border-color:var(--line);border-radius:3px}
+.tool-center .tool-overlay-url code{color:var(--ink)}
+.tool-center .tool-overlay-url p{color:#686b60}
+.tool-center .tool-card input:not([type=checkbox]),.tool-center .tool-card textarea,.tool-center .tool-card select{max-width:100%;border:1px solid #d9d6cc;background:#f9f8f3;color:var(--ink);border-radius:3px;padding:11px;font:inherit}
+.tool-center .tool-card input:focus,.tool-center .tool-card textarea:focus,.tool-center .tool-card select:focus{outline:2px solid #d7ff55;outline-offset:1px}
+.tool-center .tool-card input[type=checkbox]{accent-color:#687b34}
+.tool-center .tool-card .btn-primary{border:1px solid var(--ink);border-radius:3px;background:var(--acid);color:var(--ink);box-shadow:none}
+.tool-center .tool-card .btn-ghost{border:1px solid var(--line);border-radius:3px;background:#fffefa;color:var(--ink)}
+@media(max-width:760px){.tool-center .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tool-center .tool-methods{grid-template-columns:1fr}.tool-center .tool-section-head{align-items:flex-start;flex-direction:column}.tool-center .tool-nav{gap:6px}.tool-center .tool-nav a{padding:9px 10px}}
+@media(max-width:480px){.tool-center .tool-grid{grid-template-columns:1fr}.tool-center .tool-hero{padding:28px 0 18px}.tool-center .tool-title{font-size:32px}.tool-center .tool-card{padding:15px}}
