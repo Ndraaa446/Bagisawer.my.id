@@ -129,5 +129,5 @@ test("overlay resolution fails closed for revoked tokens and disabled feature se
   const route = await source("src/app/api/overlay/[token]/route.ts");
   assert.match(route, /\.is\("revoked_at", null\)/);
   assert.match(route, /featureSetting\?\.enabled !== true \|\| featureSetting\?\.overlay_enabled !== true/);
-  assert.match(route, /if \(!resolved\) return noStoreJson\(\{ error: "Overlay tidak ditemukan atau tidak aktif\." \}, 404\)/);
+  assert.match(route, /if \(!resolved\) \{\s*if \(!createAdminClient\(\)\) return noStoreJson\(\{ error: "Overlay belum dikonfigurasi\." \}, 503\);\s*return notFound\(\);/);
 });
