@@ -106,3 +106,11 @@ test("overlay client plays a built-in chime only when the creator has sound enab
   assert.match(client, /oscillator\.frequency\.setValueAtTime\(frequency, start\)/);
   assert.match(client, /if \(context\) void context\.close\(\)\.catch/);
 });
+
+
+test("feature module settings reset module-scoped form and activation state on navigation", async () => {
+  const component = await source("src/components/feature-module-settings.tsx");
+  assert.match(component, /setActivationLoading\(true\);\s*setNotice\(""\);\s*setFeatureEnabled\(false\);\s*setOverlayEnabled\(false\);/);
+  assert.match(component, /setValues\(Object\.fromEntries\(fields\.map\(\(field\) => \[field\.key, field\.initial \?\? ""\]\)\)\);/);
+  assert.match(component, /\}, \[storageKey, featureKey\]\);/);
+});
